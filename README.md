@@ -30,8 +30,8 @@ object.
 
 ## Getting Started
 
-Live.js has been designed to be as **configuration free** as possible,
-just include the script in your program and be done with it.
+Thingamajig.js has been designed to be as **configuration free** as possible,
+just include the script in your runtime environment and be done with it.
 
 ### Node.js
 
