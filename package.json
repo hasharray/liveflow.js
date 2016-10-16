@@ -1,6 +1,6 @@
 {
   "name": "thingamajig",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "live editing for node.js and the browser",
   "main": "lib/thingamajig.js",
   "browser": "lib/thingamajig_browser.js",
