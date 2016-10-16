@@ -1,0 +1,35 @@
+{
+  "name": "thingamajig",
+  "version": "0.0.0",
+  "description": "live editing for node.js and the browser",
+  "main": "lib/thingamajig.js",
+  "browser": "lib/thingamajig_browser.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "author": "Casper Beyer",
+  "license": "MIT",
+  "dependencies": {
+    "reassign": "0.0.1",
+    "revaluate": "0.0.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hasharray/thingamajig.js.git"
+  },
+  "keywords": [
+    "live",
+    "editing",
+    "code",
+    "reloading",
+    "reload"
+  ],
+  "bugs": {
+    "url": "https://github.com/hasharray/thingamajig.js/issues"
+  },
+  "homepage": "https://github.com/hasharray/thingamajig.js"
+}
