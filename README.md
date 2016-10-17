@@ -57,7 +57,7 @@ document.
 ```html
 <script type="text/javascript">
   window.stop();
-  document.write('<script src="thingamajig.js"><\/script><body><\/body>'));
+  document.write('<script src="//thingamajig.js.org/thingamajig.js"><\/script><body><\/body>');
 </script>
 ```
 
