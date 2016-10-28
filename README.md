@@ -65,6 +65,10 @@ document.
 
 3. Enjoy live editing and reloading.
 
+## Documentation
+
+See [https://thingamajig.js.org].
+
 ## License
 
 MIT
