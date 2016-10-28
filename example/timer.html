@@ -3,16 +3,29 @@
   <head>
     <script type="text/javascript">
       window.stop();
-      document.write([
-        '<script src="/dist/thingamajig.js"><\/script>',
-        '<body><\/body>',
-      ].join('\n'));
+      document.write('<script src="/dist/thingamajig.js"><\/script><body><\/body>');
     </script>
 
     <meta charset="utf-8">
     <title></title>
   </head>
   <body>
+    <p>
+      Open example/timer.js and try editing the callbacks
+    </p>
+
+    <script type="text/javascript">
+    var log = console.log;
+    console.log = function() {
+      var paragraph = document.createElement('p');
+      paragraph.innerText = Array.prototype.join.call(arguments, ' ');
+
+      log.apply(console, arguments);
+      document.body.appendChild(paragraph);
+      window.scrollBy(0, 9999);
+    };
+    </script>
+
     <script src="timer.js" charset="utf-8"></script>
   </body>
 </html>
