@@ -17,14 +17,16 @@ var content = [
 
 fs.writeFileSync(filename, content, 'utf8');
 
-var ps = child.fork(filename, [
+var ps = child.spawn('node', [
   '--require ' + require.resolve('..'),
+  filename,
 ]);
 
-ps.on('message', function(message) {
+ps.stdout.on('data', function(chunk) {
+  var message = chunk.toString('utf8');
   assert.equal(message, 'done');
   ps.kill('SIGTERM');
 });
 
-content += 'process.send(\'done\');';
+content += 'console.log(\'done\');';
 fs.writeFileSync(filename, content, 'utf8');
