@@ -67,7 +67,7 @@ document.
 
 ## Documentation
 
-See [https://thingamajig.js.org].
+See [https://thingamajig.js.org](https://thingamajig.js.org).
 
 ## License
 
