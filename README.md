@@ -37,14 +37,14 @@ just include the script in your runtime environment and be done with it.
 
 1. Install the `thingamajig` module.
 ```
-npm install thingamajig
+$ npm install thingamajig
 ```
 
 2. Start node with the `--require` (shorthand `-r`) option, passing in
 `thingamajig` as the module name to require.
 
 ```
-node -r thingamajig myapp.js
+$ node -r thingamajig myapp.js
 ```
 
 3. 3. Enjoy live editing and reloading.
