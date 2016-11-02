@@ -13,4 +13,7 @@ test : $(addsuffix .test, $(basename $(TEST)))
 %.test : %.js
 	@$(NODE) $<
 
-.PHONY : test %.test
+clean:
+	rm -f browser/thingamajig.js
+
+.PHONY : test %.test clean
