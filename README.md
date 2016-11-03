@@ -52,13 +52,10 @@ node -r thingamajig myapp.js
 ### Browser
 
 1. Include the following script at the very top of the `head` section in your
-document.
+document, it should be the first element after the opening `<head>` tag.
 
 ```html
-<script type="text/javascript">
-  window.stop();
-  document.write('<script src="//thingamajig.js.org/thingamajig.js"><\/script><body><\/body>');
-</script>
+<script src="//thingamajig.js.org/thingamajig.js"></script>
 ```
 
 2. Open the document in your preferred browser.
