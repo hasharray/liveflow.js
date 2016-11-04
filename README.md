@@ -20,6 +20,11 @@ Re-evaluation means the following things:
 * Surviving call expressions yield their previous value.
 * Function modifications are applied.
 
+##### Live Reloading of Style Sheets
+
+Whenever style-sheets are changed on disk or across the network, the old style
+link will be replaced with a new one causing the style-sheet to reload.
+
 ##### Live Reloading of JSON
 
 Whenever the source of a JSON file changes on disk that has been imported with
