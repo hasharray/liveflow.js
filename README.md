@@ -20,6 +20,11 @@ Re-evaluation means the following things:
 * Surviving call expressions yield their previous value.
 * Function modifications are applied.
 
+##### Live Reloading of Documents
+
+Whenever a document is changed on disk or across the network,
+the page will be reloaded.
+
 ##### Live Reloading of Style Sheets
 
 Whenever style-sheets are changed on disk or across the network, the old style
