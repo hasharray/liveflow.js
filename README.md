@@ -64,6 +64,15 @@ node -r thingamajig myapp.js
 
 3. 3. Enjoy live editing and reloading.
 
+If you want to do your own post-processing in addition to what thingamajig does,
+add a listener on the `reload` event.
+
+```js
+proces.on('reload', function(module) {
+  console.log(module.filename, 'reloaded');
+});
+```
+
 ### Browser
 
 1. Include the following script at the very top of the `head` section in your
@@ -76,6 +85,15 @@ document, it should be the first element after the opening `<head>` tag.
 2. Open the document in your preferred browser.
 
 3. Enjoy live editing and reloading.
+
+If you want to do your own post-processing in addition to what thingamajig does,
+add an event listener to the `reload` event.
+
+```js
+document.addEventListener('reload', function(event) {
+  console.log(event.target);
+});
+```
 
 ## Documentation
 
