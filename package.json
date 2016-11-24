@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "description": "live editing for node.js and the browser",
   "main": "lib/thingamajig.js",
-  "browser": "lib/thingamajig_browser.js",
+  "browser": "lib/thingamajig/browser.js",
   "directories": {
     "example": "example"
   },
