@@ -1,6 +1,6 @@
-# Thingamajig.js - Live Editing for Node.js and Browsers
+# Liveflow.js - Live Editing for Node.js and Browsers
 
-Thingamajig.js is a *small* runtime extension that enables live-editing of
+Liveflow.js is a *small* runtime extension that enables live-editing of
 scripts as-well as live-reloading of required json files.
 
 It's a pure, self-contained JavaScript based implementation with no external
@@ -45,26 +45,26 @@ object.
 
 ## Getting Started
 
-Thingamajig.js has been designed to be as **configuration free** as possible,
+Liveflow.js has been designed to be as **configuration free** as possible,
 just include the script in your runtime environment and be done with it.
 
 ### Node.js
 
-1. Install the `thingamajig` module.
+1. Install the `liveflow` module.
 ```
-npm install thingamajig
+npm install liveflow
 ```
 
 2. Start node with the `--require` (shorthand `-r`) option, passing in
-`thingamajig` as the module name to require.
+`liveflow` as the module name to require.
 
 ```
-node -r thingamajig myapp.js
+node -r liveflow myapp.js
 ```
 
 3. 3. Enjoy live editing and reloading.
 
-If you want to do your own post-processing in addition to what thingamajig does,
+If you want to do your own post-processing in addition to what liveflow does,
 add a listener on the `reload` event.
 
 ```js
@@ -79,14 +79,14 @@ proces.on('reload', function(module) {
 document, it should be the first element after the opening `<head>` tag.
 
 ```html
-<script src="//thingamajig.js.org/thingamajig.js"></script>
+<script src="//liveflow.js.org/liveflow.js"></script>
 ```
 
 2. Open the document in your preferred browser.
 
 3. Enjoy live editing and reloading.
 
-If you want to do your own post-processing in addition to what thingamajig does,
+If you want to do your own post-processing in addition to what liveflow does,
 add an event listener to the `reload` event.
 
 ```js
@@ -97,7 +97,7 @@ document.addEventListener('reload', function(event) {
 
 ## Documentation
 
-See [https://thingamajig.js.org].
+See [https://liveflow.js.org].
 
 ## License
 
