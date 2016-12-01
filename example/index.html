@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style media="screen">
+      * {
+        box-sizing: border-box;
+      }
+
+      #root {
+        height: 100%;
+      }
+
+      #editor,
+      #browser {
+        float: left;
+        width: 50%;
+        height: 100%;
+      }
+
+      #editor ul {
+        list-style: none;
+        display: inline-block;
+        padding: 0;
+      }
+
+      #editor textarea {
+        width: 100%;
+        font-family: monospace;
+      }
+
+      #editor select,
+      #browser input {
+        width: 100%;
+        margin-bottom: 1em;
+        display: block;
+      }
+
+    </style>
+  </head>
+  <body>
+    <main id="root">
+      <section id="editor">
+        <select id="example" class="" name="">
+          <option value=""></option>
+          <option value="callbacks.html">Callbacks</option>
+        </select>
+
+        <ul id="items">
+        </ul>
+      </section>
+
+      <section id="browser">
+        <input id="address" type="text" readonly/>
+        <iframe id="frame" src="" width="100%" height="100%"></iframe>
+      </section>
+    </main>
+
+    <template id="template">
+      <li>
+        <details open>
+          <summary></summary>
+          <textarea cols="80" rows="10"></textarea>
+        </details>
+      </li>
+    </template>
+
+    <script type="text/javascript">
+      example.onchange = function() {
+        address.value = example.value;
+
+        frame.onload = function() {
+          var content = template.content;
+
+          var item = content.querySelector('li');
+          item.id = address.value;
+
+          var summary = item.querySelector('summary');
+          summary.textContent = address.value;
+
+          var clone = document.importNode(template.content, true);
+          items.appendChild(clone);
+
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', address.value);
+          xhr.onload = function() {
+            var item = document.getElementById(address.value);
+            var textarea = item.querySelector('textarea');
+
+            textarea.value = xhr.responseText;
+            textarea.onchange = function() {
+              // TODO
+            };
+          };
+
+          xhr.send(null);
+
+          var scripts = Array.from(frame.contentDocument.scripts);
+          scripts.forEach(function(script) {
+            if (!script.src || /thingamajig/.test(script.src)) {
+              return;
+            }
+
+            var filename = script.getAttribute('src');
+            script.setAttribute('title', filename);
+
+            var item = content.querySelector('li');
+            item.id = filename;
+
+            var summary = item.querySelector('summary');
+            summary.textContent = filename;
+
+            var clone = document.importNode(template.content, true);
+            items.appendChild(clone);
+
+            var item = document.getElementById(filename);
+            var textarea = item.querySelector('textarea');
+
+            textarea.onchange = function() {
+              script.inject(textarea.value);
+            };
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', script.src);
+            xhr.onload = function() {
+              textarea.value = xhr.responseText;
+            };
+
+            xhr.send(null);
+          });
+        };
+
+        frame.src = address.value;
+      };
+
+      if (location.search) {
+        example.value = location.search.slice(1);
+        example.onchange();
+      }
+    </script>
+  </body>
+</html>
