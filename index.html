@@ -1,151 +1,120 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
-    <meta charset="UTF-8">
-    <title>Thingamajig.js by hasharray</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-  </head>
-  <body>
-    <section class="page-header">
-      <h1 class="project-name">Thingamajig.js</h1>
-      <h2 class="project-tagline">Live Editing for Node.js and Browsers</h2>
-      <a href="https://github.com/hasharray/thingamajig.js" class="btn">View on GitHub</a>
-      <a href="https://github.com/hasharray/thingamajig.js/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/hasharray/thingamajig.js/tarball/master" class="btn">Download .tar.gz</a>
+
+<head>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    .container {
+      padding: 0;
+      margin: 0;
+      font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      background-color: #eeeeee;
+    }
+    
+    .content {
+      display: flex;
+    }
+    
+    .masthead {
+      background-color: #f7df1e;
+      color: #333;
+      text-align: center;
+      padding-top: 5rem;
+      padding-bottom: 10rem;
+    }
+    
+    .masthead-title {
+      font-size: 4rem;
+      margin-top: 0;
+      margin-bottom: 0.1rem;
+    }
+    
+    .masthead-tagline {
+      margin-bottom: 2rem;
+      font-size: 1.25em;
+      font-weight: normal;
+      opacity: 0.7;
+    }
+    
+    .content {
+      margin-top: -10rem;
+    }
+    
+    .window {
+      max-width: 80ch;
+      height: 380px;
+      border-radius: 4px;
+      background: #fff;
+      margin: 3rem auto -5rem;
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .window-header {
+      background: #ececec;
+      padding: 0.4rem;
+      font-size: 0.9rem;
+      position: relative;
+      color: #a5a5a5;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: center;
+    }
+    
+    .window-pane {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .editor,
+    .frame {
+      border: 0;
+      width: 100%;
+      height: 100%;
+      overflow: scroll;
+    }
+    
+    .half-width {
+      width: 50%;
+      flex: 50%;
+    }
+    
+    .full-width {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body class="container">
+  <header class="masthead">
+    <h1 class="masthead-title">Thingamajig</h1>
+    <em class="masthead-tagline">Live Editing for JavaScript Developers</em>
+  </header>
+
+  <main class="content">
+    <section id="editor" class="window half-width">
+      <header class="window-header">
+        <span class="window-title">~/callbacks/index.html</span>
+      </header>
+
+      <span class="window-pane">
+        <textarea class="editor"></textarea>
+      </span>
     </section>
 
-    <section class="main-content">
-      <p>Thingamajig.js is a <em>small</em> runtime extension that enables live-editing of
-scripts as-well as live-reloading of required json files.</p>
+    <section id="browser" class="window half-width">
+      <header class="window-header">
+        <span class="window-title">http://localhost:3000/callbacks.html</span>
+      </header>
 
-<p>It's a pure, self-contained JavaScript based implementation with no external
-parts and <em>should</em> work in any more or less any JavaScript runtime, be it
-Node.js, Chrome, Firefox, Safari, Internet Explorer or Microsoft Edge.</p>
-
-<h2>
-<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
-
-<h5>
-<a id="live-editing-of-scripts" class="anchor" href="#live-editing-of-scripts" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Live Editing of Scripts</h5>
-
-<p>Whenever scripts are changed on disk, across the network or within the document
-object model itself (e.g inline script tags) the source of that script is
-re-evaluated in its original execution context.</p>
-
-<p>Re-evaluation means the following things:</p>
-
-<ul>
-<li>Modified and new top level call expressions are called.</li>
-<li>Surviving call expressions yield their previous value.</li>
-<li>Function modifications are applied.</li>
-</ul>
-
-<h5>
-<a id="live-reloading-of-documents" class="anchor" href="#live-reloading-of-documents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Live Reloading of Documents</h5>
-
-<p>Whenever a document is changed on disk or across the network,
-the page will be reloaded.</p>
-
-<h5>
-<a id="live-reloading-of-style-sheets" class="anchor" href="#live-reloading-of-style-sheets" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Live Reloading of Style Sheets</h5>
-
-<p>Whenever style-sheets are changed on disk or across the network, the old style
-link will be replaced with a new one causing the style-sheet to reload.</p>
-
-<h5>
-<a id="live-reloading-of-images" class="anchor" href="#live-reloading-of-images" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Live Reloading of Images</h5>
-
-<p>Whenever image sources are changed on disk or across the network, the image
-elements linking to that file will be reloaded.</p>
-
-<h5>
-<a id="live-reloading-of-json" class="anchor" href="#live-reloading-of-json" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Live Reloading of JSON</h5>
-
-<p>Whenever the source of a JSON file changes on disk that has been imported with
-<code>require</code>, it will reload and replace the key/value pairs on the original
-object.</p>
-
-<p><em>This only applies to Node.js environments.</em></p>
-
-<h2>
-<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
-
-<p>Thingamajig.js has been designed to be as <strong>configuration free</strong> as possible,
-just include the script in your runtime environment and be done with it.</p>
-
-<h3>
-<a id="nodejs" class="anchor" href="#nodejs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Node.js</h3>
-
-<ol>
-<li>Install the <code>thingamajig</code> module.</li>
-</ol>
-
-<pre><code>npm install thingamajig
-</code></pre>
-
-<ol>
-<li>Start node with the <code>--require</code> (shorthand <code>-r</code>) option, passing in
-<code>thingamajig</code> as the module name to require.</li>
-</ol>
-
-<pre><code>node -r thingamajig myapp.js
-</code></pre>
-
-<ol>
-<li>3. Enjoy live editing and reloading.</li>
-</ol>
-
-<p>If you want to do your own post-processing in addition to what thingamajig does,
-add a listener on the <code>reload</code> event.</p>
-
-<div class="highlight highlight-source-js"><pre><span class="pl-smi">proces</span>.<span class="pl-en">on</span>(<span class="pl-s"><span class="pl-pds">'</span>reload<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>(<span class="pl-c1">module</span>) {
-  <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-c1">module</span>.<span class="pl-c1">filename</span>, <span class="pl-s"><span class="pl-pds">'</span>reloaded<span class="pl-pds">'</span></span>);
-});</pre></div>
-
-<h3>
-<a id="browser" class="anchor" href="#browser" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Browser</h3>
-
-<ol>
-<li>Include the following script at the very top of the <code>head</code> section in your
-document, it should be the first element after the opening <code>&lt;head&gt;</code> tag.</li>
-</ol>
-
-<div class="highlight highlight-text-html-basic"><pre>&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>//thingamajig.js.org/thingamajig.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</pre></div>
-
-<ol>
-<li><p>Open the document in your preferred browser.</p></li>
-<li><p>Enjoy live editing and reloading.</p></li>
-</ol>
-
-<p>If you want to do your own post-processing in addition to what thingamajig does,
-add an event listener to the <code>reload</code> event.</p>
-
-<div class="highlight highlight-source-js"><pre><span class="pl-c1">document</span>.<span class="pl-c1">addEventListener</span>(<span class="pl-s"><span class="pl-pds">'</span>reload<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>(<span class="pl-c1">event</span>) {
-  <span class="pl-en">console</span>.<span class="pl-c1">log</span>(<span class="pl-c1">event</span>.<span class="pl-c1">target</span>);
-});</pre></div>
-
-<h2>
-<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Documentation</h2>
-
-<p>See [<a href="https://thingamajig.js.org">https://thingamajig.js.org</a>].</p>
-
-<h2>
-<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
-
-<p>MIT</p>
-
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/hasharray/thingamajig.js">Thingamajig.js</a> is maintained by <a href="https://github.com/hasharray">hasharray</a>.</span>
-
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
-
+      <span class="window-pane">
+        <iframe class="frame"></iframe>
+      </span>
     </section>
-
-  
-  </body>
+  </main>
+</body>
 </html>
