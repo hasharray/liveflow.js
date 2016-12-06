@@ -1,4 +1,4 @@
-PATH ?= $(npm bin):$(PATH)
+PATH ?= $(shell npm bin):$(PATH)
 NODE ?= node
 TEST ?= $(wildcard test/*.js)
 

@@ -16,7 +16,9 @@
     "reassign": "0.0.1",
     "revaluate": "0.0.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "browserify": "^13.1.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hasharray/thingamajig.js.git"
