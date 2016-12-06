@@ -259,7 +259,7 @@
           pane.appendChild(textarea);
 
           var xhr = new XMLHttpRequest();
-          xhr.open('GET', script.src);
+          xhr.open('GET', 'demo/' + script.getAttribute('src'));
           xhr.onload = function() {
             textarea.value = xhr.responseText;
             textarea.onchange = function() {
