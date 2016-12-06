@@ -1,5 +1,5 @@
 var token = Math.random();
 
-setTimeout(function() {
+setInterval(function() {
   document.body.innerHTML = 'Hello World, the token is ' + token;
 }, 1000);
