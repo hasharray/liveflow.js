@@ -1,206 +1,277 @@
-<!DOCTYPE html>
-<html lang="en-us">
+  <!DOCTYPE html>
+  <html lang="en-us">
 
-<head>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+  <head>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-    .container {
-      padding: 0;
-      margin: 0;
-      font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-size: 16px;
-      line-height: 1.5;
-      background-color: #eeeeee;
-    }
+      .container {
+        padding: 0;
+        margin: 0;
+        font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        background-color: #eeeeee;
+      }
 
-    .content {
-      display: flex;
-    }
+      .content {
+        display: flex;
+      }
 
-    .banner {
-      background-color: #f7df1e;
-      color: #333;
-      text-align: center;
-      padding-top: 5rem;
-      padding-bottom: 10rem;
-    }
+      .banner {
+        background-color: #f7df1e;
+        color: #333;
+        text-align: center;
+        padding-top: 5rem;
+        padding-bottom: 10rem;
+      }
 
-    .banner-title {
-      font-size: 4rem;
-      margin-top: 0;
-      margin-bottom: 0.1rem;
-    }
+      .banner-title {
+        font-size: 4rem;
+        margin-top: 0;
+        margin-bottom: 0.1rem;
+      }
 
-    .banner-tagline {
-      margin-bottom: 2rem;
-      font-size: 1.25em;
-      font-weight: normal;
-      opacity: 0.7;
-    }
+      .banner-tagline {
+        margin-bottom: 2rem;
+        font-size: 1.25em;
+        font-weight: normal;
+        opacity: 0.7;
+      }
 
-    .content {
-      margin-top: -7rem;
-    }
+      .content {
+        margin-top: -7rem;
+      }
 
-    .window {
-      max-width: 80ch;
-      height: 380px;
-      border-radius: 4px;
-      background: #fff;
-      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-    }
+      .window {
+        max-width: 80ch;
+        height: 380px;
+        border-radius: 4px;
+        background: #fff;
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+      }
 
-    .window-header {
-      background: #ececec;
-      padding: 0.4rem;
-      font-size: 0.9rem;
-      color: #a5a5a5;
-      border-bottom: 1px solid #e0e0e0;
-      text-align: center;
-    }
+      .window-header {
+        background: #ececec;
+        padding: 0.4rem;
+        font-size: 0.9rem;
+        color: #a5a5a5;
+        border-bottom: 1px solid #e0e0e0;
+        text-align: center;
+      }
 
-    .window-pane {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
+      .window-pane {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
 
-    .tab-group {
-      display: flex;
+      .tab-group {
+        display: flex;
 
-      list-style: none;
-      margin: 0;
-      padding: 0;
+        list-style: none;
+        margin: 0;
+        padding: 0;
 
-      position: relative;
-      height: 100%;
-      width: 100%;
-    }
+        position: relative;
+        height: 100%;
+        width: 100%;
+      }
 
-    .tab {
-      background: #ececec;
-      flex: 1;
-      margin: 0;
-      z-index: 0;
-      height: 2rem;
-    }
+      .tab {
+        background: #ececec;
+        flex: 1;
+        margin: 0;
+        z-index: 0;
+        height: 2rem;
+      }
 
-    .tab-header {
-      text-align: center;
-      padding: 0.25rem;
-      height: 2rem;
-    }
+      .tab-header {
+        text-align: center;
+        padding: 0.25rem;
+        height: 2rem;
+      }
 
-    .tab-link {
-      display: block;
-      width: 100%;
-      height: 100%;
-      color: inherit;
-      text-decoration: none;
-    }
+      .tab-link {
+        display: block;
+        width: 100%;
+        height: 100%;
+        color: inherit;
+        text-decoration: none;
+      }
 
-    .tab-pane {
-      display: block;
-      position: absolute;
-      top: 1.5rem;
-      left: 0;
-      right: 0;
-      bottom: 1.5rem;
-    }
+      .tab-pane {
+        display: block;
+        position: absolute;
+        top: 1.5rem;
+        left: 0;
+        right: 0;
+        bottom: 1.5rem;
+      }
 
-    .tab:target {
-      z-index: 1;
-      background: #ffffff;
-    }
+      .tab:target {
+        z-index: 1;
+        background: #ffffff;
+      }
 
-    .editor,
-    .frame {
-      border: 0;
-      width: 100%;
-      height: 100%;
-    }
+      .editor,
+      .frame {
+        border: 0;
+        width: 100%;
+        height: 100%;
+      }
 
-    .editor {
-      font-family: monospace;
-      font-size: 16px;
-      resize: none;
-    }
+      .editor {
+        font-family: monospace;
+        font-size: 16px;
+        resize: none;
+      }
 
-    .editor:focus {
-      outline: none;
-    }
+      .editor:focus {
+        outline: none;
+      }
 
-    .grid {
-      display: flex;
-      justify-content: space-around;
-    }
+      .grid {
+        display: flex;
+        justify-content: space-around;
+      }
 
-    .half-width {
-      width: 50%;
-    }
+      .half-width {
+        width: 50%;
+      }
 
-    .full-width {
-      width: 100%;
-    }
-  </style>
-</head>
+      .full-width {
+        width: 100%;
+      }
+    </style>
+  </head>
 
-<body class="container">
-  <header class="banner">
-    <h1 class="banner-title">Thingamajig</h1>
-    <em class="banner-tagline">Live Editing for JavaScript Developers</em>
-  </header>
+  <body class="container">
+    <header class="banner">
+      <h1 class="banner-title">Thingamajig</h1>
+      <em class="banner-tagline">Live Editing for JavaScript Developers</em>
+    </header>
 
-  <main class="content grid">
-    <section id="editor" class="window half-width">
-      <header class="window-header">
-        <span class="window-title">~/callbacks/index.html</span>
-      </header>
+    <main class="content grid">
+      <section id="editor" class="window half-width">
+        <header class="window-header">
+          <span class="window-title">demo/index.html</span>
+        </header>
 
-      <section class="window-pane">
-        <ul class="tab-group">
-          <li id="demo/index.html" class="tab active">
-            <header class="tab-header">
-              <a class="tab-link" href="#demo/index.html">demo/index.html</a>
-            </header>
-
-            <p class="tab-pane">
-              <textarea class="editor"><!-- TODO --></textarea>
-            </p>
-          </li>
-
-          <li id="demo/script.js" class="tab">
-            <header class="tab-header">
-              <a class="tab-link" href="#demo/script.js">demo/script.js</a>
-            </header>
-
-            <p class="tab-pane">
-              <textarea class="editor">/* TODO */</textarea>
-            </p>
-          </li>
-        </ul>
+        <section class="window-pane">
+          <ul id="tabs" class="tab-group">
+          </ul>
+        </section>
       </section>
-    </section>
 
-    <section id="browser" class="window half-width">
-      <header class="window-header">
-        <span class="window-title">http://localhost:3000/callbacks.html</span>
-      </header>
+      <section id="browser" class="window half-width">
+        <header class="window-header">
+          <span class="window-title">http://localhost:3000/callbacks.html</span>
+        </header>
 
-      <section class="window-pane">
-        <iframe class="frame"></iframe>
+        <section class="window-pane">
+          <iframe id="frame" class="frame"></iframe>
+        </section>
       </section>
-    </section>
-  </main>
+    </main>
 
-  <script>
-    window.onhashchange = function(event) {
-      var id = location.hash.replace(/#/, '');
-      var element = document.getElementById(id);
-    };
-  </script>
-</body>
-</html>
+    <script type="text/javascript">
+      frame.onload = function() {
+        var filename = 'index.html';
+
+        var item = document.createElement('li');
+        item.className = 'tab';
+        item.id = filename;
+
+        tabs.appendChild(item);
+
+        var header = document.createElement('header');
+        header.className = 'tab-header';
+
+        item.appendChild(header);
+
+        var link = document.createElement('a');
+        link.className = 'tab-link';
+        link.href = '#' + filename;
+        link.textContent = filename;
+
+        header.appendChild(link);
+
+        var pane = document.createElement('p');
+        pane.className = 'tab-pane';
+        item.appendChild(pane);
+
+        var textarea = document.createElement('textarea');
+        textarea.className = 'editor';
+
+        pane.appendChild(textarea);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'demo/index.html');
+        xhr.onload = function() {
+          textarea.value = xhr.responseText;
+          textarea.onchange = function() {
+            // TODO
+          };
+        };
+
+        xhr.send(null);
+
+        var scripts = Array.from(frame.contentDocument.scripts);
+        scripts.forEach(function(script) {
+          if (!script.hasAttribute('src')) {
+            return;
+          }
+
+          if (/cdn|thingamajig/.test(script.src)) {
+            return;
+          }
+
+          var filename = script.getAttribute('src');
+
+          var item = document.createElement('li');
+          item.className = 'tab';
+          item.id = filename;
+
+          tabs.appendChild(item);
+
+          var header = document.createElement('header');
+          header.className = 'tab-header';
+
+          item.appendChild(header);
+
+          var link = document.createElement('a');
+          link.className = 'tab-link';
+          link.href = '#' + filename;
+          link.textContent = filename;
+
+          header.appendChild(link);
+
+          var pane = document.createElement('p');
+          pane.className = 'tab-pane';
+          item.appendChild(pane);
+
+          var textarea = document.createElement('textarea');
+          textarea.className = 'editor';
+
+          pane.appendChild(textarea);
+
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', script.src);
+          xhr.onload = function() {
+            textarea.value = xhr.responseText;
+            textarea.onchange = function() {
+              script.inject(textarea.value);
+            };
+          };
+
+          xhr.send(null);
+        });
+      };
+
+      frame.src = 'demo';
+    </script>
+  </body>
+  </html>
