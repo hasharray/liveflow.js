@@ -300,7 +300,7 @@ if (!root.hasAttribute('live')) {
         }(url));
       }
 
-      setTimeout(next, 250);
+      setTimeout(next, interval);
     }, 0);
   };
 }
