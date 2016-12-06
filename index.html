@@ -6,7 +6,7 @@
     * {
       box-sizing: border-box;
     }
-    
+
     .container {
       padding: 0;
       margin: 0;
@@ -15,11 +15,11 @@
       line-height: 1.5;
       background-color: #eeeeee;
     }
-    
+
     .content {
       display: flex;
     }
-    
+
     .masthead {
       background-color: #f7df1e;
       color: #333;
@@ -27,62 +27,121 @@
       padding-top: 5rem;
       padding-bottom: 10rem;
     }
-    
+
     .masthead-title {
       font-size: 4rem;
       margin-top: 0;
       margin-bottom: 0.1rem;
     }
-    
+
     .masthead-tagline {
       margin-bottom: 2rem;
       font-size: 1.25em;
       font-weight: normal;
       opacity: 0.7;
     }
-    
+
     .content {
-      margin-top: -10rem;
+      margin-top: -7rem;
     }
-    
+
     .window {
       max-width: 80ch;
       height: 380px;
       border-radius: 4px;
       background: #fff;
-      margin: 3rem auto -5rem;
       box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
     }
-    
+
     .window-header {
       background: #ececec;
       padding: 0.4rem;
       font-size: 0.9rem;
-      position: relative;
       color: #a5a5a5;
       border-bottom: 1px solid #e0e0e0;
       text-align: center;
     }
-    
+
     .window-pane {
       width: 100%;
       height: 100%;
+      overflow: hidden;
     }
-    
+
+    .tab-group {
+      display: flex;
+
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      position: relative;
+      height: 100%;
+      width: 100%;
+    }
+
+    .tab {
+      background: #ececec;
+      flex: 1;
+      margin: 0;
+      z-index: 0;
+      height: 2rem;
+    }
+
+    .tab-header {
+      text-align: center;
+      padding: 0.25rem;
+      height: 2rem;
+    }
+
+    .tab-link {
+      display: block;
+      width: 100%;
+      height: 100%;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .tab-pane {
+      display: block;
+      position: absolute;
+      top: 1.5rem;
+      left: 0;
+      right: 0;
+      bottom: 1.5rem;
+    }
+
+    .tab:target {
+      z-index: 1;
+      background: #ffffff;
+    }
+
     .editor,
     .frame {
       border: 0;
       width: 100%;
       height: 100%;
-      overflow: scroll;
     }
-    
+
+    .editor {
+      font-family: monospace;
+      font-size: 16px;
+      resize: none;
+    }
+
+    .editor:focus {
+      outline: none;
+    }
+
+    .grid {
+      display: flex;
+      justify-content: space-around;
+    }
+
     .half-width {
       width: 50%;
-      flex: 50%;
     }
-    
+
     .full-width {
       width: 100%;
     }
@@ -95,15 +154,35 @@
     <em class="masthead-tagline">Live Editing for JavaScript Developers</em>
   </header>
 
-  <main class="content">
+  <main class="content grid">
     <section id="editor" class="window half-width">
       <header class="window-header">
         <span class="window-title">~/callbacks/index.html</span>
       </header>
 
-      <span class="window-pane">
-        <textarea class="editor"></textarea>
-      </span>
+      <section class="window-pane">
+        <ul class="tab-group">
+          <li id="demo/index.html" class="tab active">
+            <header class="tab-header">
+              <a class="tab-link" href="#demo/index.html">demo/index.html</a>
+            </header>
+
+            <p class="tab-pane">
+              <textarea class="editor"><!-- TODO --></textarea>
+            </p>
+          </li>
+
+          <li id="demo/script.js" class="tab">
+            <header class="tab-header">
+              <a class="tab-link" href="#demo/script.js">demo/script.js</a>
+            </header>
+
+            <p class="tab-pane">
+              <textarea class="editor">/* TODO */</textarea>
+            </p>
+          </li>
+        </ul>
+      </section>
     </section>
 
     <section id="browser" class="window half-width">
@@ -111,10 +190,17 @@
         <span class="window-title">http://localhost:3000/callbacks.html</span>
       </header>
 
-      <span class="window-pane">
+      <section class="window-pane">
         <iframe class="frame"></iframe>
-      </span>
+      </section>
     </section>
   </main>
+
+  <script>
+    window.onhashchange = function(event) {
+      var id = location.hash.replace(/#/, '');
+      var element = document.getElementById(id);
+    };
+  </script>
 </body>
 </html>
