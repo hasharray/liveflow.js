@@ -51,6 +51,7 @@
         border-radius: 4px;
         background: #fff;
         box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
       }
 
       .window-header {
@@ -103,12 +104,15 @@
       }
 
       .tab-pane {
+        margin: 2rem 0;
+        padding: 0;
+
         display: block;
         position: absolute;
-        top: 1rem;
+        top: 0;
         left: 0;
         right: 0;
-        bottom: 1rem;
+        bottom: 0;
       }
 
       .tab:target, .tab.active {
