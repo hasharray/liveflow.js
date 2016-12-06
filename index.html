@@ -243,7 +243,7 @@
             return;
           }
 
-          if (/cdn|thingamajig/.test(script.src)) {
+          if (/cdn|thingamajig/.test(script.getAttribute('src'))) {
             return;
           }
 
