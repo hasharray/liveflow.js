@@ -111,7 +111,7 @@
         bottom: 1rem;
       }
 
-      .tab:target {
+      .tab:target, .tab.active {
         z-index: 1;
         background: #ffffff;
       }
@@ -178,6 +178,20 @@
     </main>
 
     <script type="text/javascript">
+      tabs.onclick = function(event) {
+        var element = tabs.firstElementChild;
+
+        while (element) {
+          element.classList.remove('active');
+          element = element.nextSibling;
+        }
+
+        var active = event.target.closest('.tab');
+        active.classList.add('active');
+
+        event.preventDefault();
+      };
+
       frame.onload = function() {
         var filename = 'index.html';
 
@@ -269,6 +283,9 @@
 
           xhr.send(null);
         });
+
+        var active = tabs.lastElementChild;
+        active.classList.add('active');
       };
 
       frame.src = '//' + location.host + '/demo/index.html';
