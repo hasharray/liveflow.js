@@ -165,7 +165,7 @@
         </header>
 
         <section class="window-pane">
-          <ul id="tabs" class="tab-group">
+          <ul class="tab-group">
           </ul>
         </section>
       </section>
@@ -182,21 +182,33 @@
     </main>
 
     <script type="text/javascript">
-      tabs.onclick = function(event) {
-        var element = tabs.firstElementChild;
+      editor.onclick = function(event) {
+        var target = event.target;
+        if (/tab/.test(target.className)) {
+          var tabs = target.closest('.tab-group');
 
-        while (element) {
-          element.classList.remove('active');
-          element = element.nextSibling;
+          var tab = tabs.firstChild;
+          while (tab) {
+            tab.classList.remove('active');
+            tab = tab.nextSibling;
+          }
+
+          tab = target.closest('.tab');
+          tab.classList.add('active');
+
+          var title = editor.querySelector('.window-title');
+          title.textContent = tab.id;
+
+          event.preventDefault();
         }
-
-        var active = event.target.closest('.tab');
-        active.classList.add('active');
-
-        event.preventDefault();
       };
 
       frame.onload = function() {
+        var tabs = editor.querySelector('.tab-group');
+        while (tabs.firstChild) {
+          tabs.removeChild(tabs.firstChild);
+        }
+
         var filename = 'index.html';
 
         var item = document.createElement('li');
@@ -288,8 +300,11 @@
           xhr.send(null);
         });
 
-        var active = tabs.lastElementChild;
-        active.classList.add('active');
+        var tab = tabs.lastElementChild;
+        tab.classList.add('active');
+
+        var editorTitle = editor.querySelector('.window-title');
+        editorTitle.textContent = tab.id;
       };
 
       frame.src = '//' + location.host + '/demo/index.html';
