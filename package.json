@@ -13,6 +13,7 @@
   "author": "Casper Beyer",
   "license": "MIT",
   "dependencies": {
+    "morphdom": "^2.2.1",
     "reassign": "0.0.1",
     "revaluate": "0.0.2"
   },
