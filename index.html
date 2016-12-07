@@ -231,7 +231,7 @@
         xhr.onload = function() {
           textarea.value = xhr.responseText;
           textarea.onchange = function() {
-            // TODO
+            frame.contentDocument.inject(textarea.value);
           };
         };
 
