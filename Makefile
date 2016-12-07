@@ -23,6 +23,7 @@ test : $(addsuffix .test, $(basename $(TEST)))
 	@$(NODE) $<
 
 clean :
+	rm -rf browser
 	rm -rf website
 
 .PHONY : clean test %.test
