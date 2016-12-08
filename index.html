@@ -189,6 +189,22 @@
         <span class="tab-pane">
           <textarea class="editor"></textarea>
         </span>
+
+        <script>
+          setTimeout(function(item) {
+            var textarea = item.querySelector('textarea');
+            textarea.disabled = true;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', ['demo', item.id].join('/'));
+            xhr.onload = function() {
+              textarea.value = xhr.responseText;
+              textarea.disabled = false;
+            };
+
+            xhr.send(null);
+          }, 0, document.getElementById('$id'));
+        </script>
       </li>
     </script>
 
@@ -214,22 +230,6 @@
         group.innerHTML += tab.text
           .replace(/\$id/g, id);
 
-        var item = document.getElementById(id);
-        setTimeout(function(content, item) {
-          var textarea = item.querySelector('textarea');
-
-          var xhr = new XMLHttpRequest();
-          xhr.open('GET', '//' + location.host + '/demo/' + script.getAttribute('src'));
-          xhr.onload = function() {
-            textarea.value = xhr.responseText;
-            textarea.onchange = function() {
-              content.inject(textarea.value);
-            };
-          };
-
-          xhr.send(null);
-        }, 0, frame.contentDocument, item);
-
         var scripts = frame.contentDocument.getElementsByTagName('script');
         for (var i = 0; i < scripts.length; i++) {
           var script = scripts[i];
@@ -240,26 +240,26 @@
           var id = script.getAttribute('src');
           group.innerHTML += tab.text
             .replace(/\$id/g, id);
-
-          var item = document.getElementById(id);
-          setTimeout(function(script, item) {
-            var textarea = item.querySelector('textarea');
-
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '//' + location.host + '/demo/' + script.getAttribute('src'));
-            xhr.onload = function() {
-              textarea.value = xhr.responseText;
-              textarea.onchange = function() {
-                script.inject(textarea.value);
-              };
-            };
-
-            xhr.send(null);
-          }, 0, script, item);
         }
 
         var current = editor.querySelector('.tab:last-child');
         current.className += ' active';
+
+        setTimeout(function(group) {
+          var scripts = Array.from(
+            group.getElementsByTagName('script')
+          );
+
+          for (var i = 0; i < scripts.length; i++) {
+            var script = scripts[i];
+
+            var parent = script.parentElement;
+            var clone = document.createElement('script');
+            clone.text = script.text;
+
+            parent.replaceChild(clone, script);
+          }
+        }, 0, group);
       };
 
       frame.src = '//' + location.host + '/demo/index.html';
