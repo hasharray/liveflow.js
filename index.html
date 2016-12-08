@@ -51,7 +51,6 @@
         border-radius: 4px;
         background: #fff;
         box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
       }
 
       .window-header {
@@ -181,130 +180,70 @@
       </section>
     </main>
 
+    <script id="tab" type="text/template">
+      <li id="$id" class="tab">
+        <header class="tab-header">
+          <a class="tab-link" href="#$id">$id</a>
+        </header>
+
+        <span class="tab-pane">
+          <textarea class="editor"></textarea>
+        </span>
+      </li>
+    </script>
+
     <script type="text/javascript">
-      editor.onclick = function(event) {
-        var target = event.target;
-        if (/tab/.test(target.className)) {
-          var tabs = target.closest('.tab-group');
-
-          var tab = tabs.firstChild;
-          while (tab) {
-            tab.classList.remove('active');
-            tab = tab.nextSibling;
-          }
-
-          tab = target.closest('.tab');
-          tab.classList.add('active');
-
-          var title = editor.querySelector('.window-title');
-          title.textContent = tab.id;
-
-          event.preventDefault();
-        }
-      };
-
       frame.onload = function() {
-        var tabs = editor.querySelector('.tab-group');
-        while (tabs.firstChild) {
-          tabs.removeChild(tabs.firstChild);
-        }
+        var group = editor.querySelector('.tab-group');
+        group.innerHTML = '';
 
-        var filename = 'index.html';
+        var id = 'index.html';
+        group.innerHTML += tab.text
+          .replace(/\$id/g, id);
 
-        var item = document.createElement('li');
-        item.className = 'tab';
-        item.id = filename;
-
-        tabs.appendChild(item);
-
-        var header = document.createElement('header');
-        header.className = 'tab-header';
-
-        item.appendChild(header);
-
-        var link = document.createElement('a');
-        link.className = 'tab-link';
-        link.href = '#' + filename;
-        link.textContent = filename;
-
-        header.appendChild(link);
-
-        var pane = document.createElement('p');
-        pane.className = 'tab-pane';
-        item.appendChild(pane);
-
-        var textarea = document.createElement('textarea');
-        textarea.className = 'editor';
-
-        pane.appendChild(textarea);
-
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '//' + location.host + '/demo/index.html');
-        xhr.onload = function() {
-          textarea.value = xhr.responseText;
-          textarea.onchange = function() {
-            frame.contentDocument.inject(textarea.value);
-          };
-        };
-
-        xhr.send(null);
-
-        var scripts = Array.from(frame.contentDocument.scripts);
-        scripts.forEach(function(script) {
-          if (!script.hasAttribute('src')) {
-            return;
-          }
-
-          if (/cdn|thingamajig/.test(script.getAttribute('src'))) {
-            return;
-          }
-
-          var filename = script.getAttribute('src');
-
-          var item = document.createElement('li');
-          item.className = 'tab';
-          item.id = filename;
-
-          tabs.appendChild(item);
-
-          var header = document.createElement('header');
-          header.className = 'tab-header';
-
-          item.appendChild(header);
-
-          var link = document.createElement('a');
-          link.className = 'tab-link';
-          link.href = '#' + filename;
-          link.textContent = filename;
-
-          header.appendChild(link);
-
-          var pane = document.createElement('p');
-          pane.className = 'tab-pane';
-          item.appendChild(pane);
-
-          var textarea = document.createElement('textarea');
-          textarea.className = 'editor';
-
-          pane.appendChild(textarea);
+        var item = document.getElementById(id);
+        setTimeout(function(content, item) {
+          var textarea = item.querySelector('textarea');
 
           var xhr = new XMLHttpRequest();
           xhr.open('GET', '//' + location.host + '/demo/' + script.getAttribute('src'));
           xhr.onload = function() {
             textarea.value = xhr.responseText;
             textarea.onchange = function() {
-              script.inject(textarea.value);
+              content.inject(textarea.value);
             };
           };
 
           xhr.send(null);
-        });
+        }, 0, frame.contentDocument, item);
 
-        var tab = tabs.lastElementChild;
-        tab.classList.add('active');
+        var scripts = frame.contentDocument.getElementsByTagName('script');
+        for (var i = 0; i < scripts.length; i++) {
+          var script = scripts[i];
+          if (script.getAttribute('type') != 'thingamajig/javascript') {
+            continue;
+          }
 
-        var editorTitle = editor.querySelector('.window-title');
-        editorTitle.textContent = tab.id;
+          var id = script.getAttribute('src');
+          group.innerHTML += tab.text
+            .replace(/\$id/g, id);
+
+          var item = document.getElementById(id);
+          setTimeout(function(script, item) {
+            var textarea = item.querySelector('textarea');
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '//' + location.host + '/demo/' + script.getAttribute('src'));
+            xhr.onload = function() {
+              textarea.value = xhr.responseText;
+              textarea.onchange = function() {
+                script.inject(textarea.value);
+              };
+            };
+
+            xhr.send(null);
+          }, 0, script, item);
+        }
       };
 
       frame.src = '//' + location.host + '/demo/index.html';
