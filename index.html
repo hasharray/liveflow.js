@@ -114,7 +114,7 @@
         bottom: 0;
       }
 
-      .tab:target, .tab.active {
+      .tab.active {
         z-index: 1;
         background: #ffffff;
       }
@@ -193,6 +193,19 @@
     </script>
 
     <script type="text/javascript">
+      editor.onclick = function(event) {
+        var target = event.target;
+        if (/tab-link/.test(target.className)) {
+          var previous = editor.querySelector('.active');
+          previous.className = previous.className.replace(/active/, '');
+
+          var current = target.closest('.tab');
+          current.className += ' active';
+
+          event.preventDefault();
+        }
+      };
+
       frame.onload = function() {
         var group = editor.querySelector('.tab-group');
         group.innerHTML = '';
@@ -244,6 +257,9 @@
             xhr.send(null);
           }, 0, script, item);
         }
+
+        var current = editor.querySelector('.tab:last-child');
+        current.className += ' active';
       };
 
       frame.src = '//' + location.host + '/demo/index.html';
