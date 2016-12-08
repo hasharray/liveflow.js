@@ -209,6 +209,23 @@
     </script>
 
     <script type="text/javascript">
+      editor.onchange = function(event) {
+        var target = event.target;
+        var item = target.closest('.tab');
+
+        var content = frame.contentDocument;
+
+        if (/\.js/.test(item.id)) {
+          var script = content.querySelector(
+            'script[src*="' + item.id + '"]'
+          );
+
+          script.inject(target.value);
+        } else if (/\.html/.test(item.id)) {
+          content.inject(target.value);
+        }
+      };
+
       editor.onclick = function(event) {
         var target = event.target;
         if (/tab-link/.test(target.className)) {
