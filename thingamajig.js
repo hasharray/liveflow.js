@@ -165,7 +165,7 @@ if (documentElement.hasAttribute('live')) {
     }
 
     if (pattern.test(location.href)) {
-      location.reload();
+      document.reload();
     }
   };
 
