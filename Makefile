@@ -8,7 +8,7 @@ browser/thingamajig.js : lib/thingamajig/browser.js
 	@browserify -o $@ $<
 
 website : browser
-	git clone --branch gh-pages $(shell git remote get-url origin) website
+	git clone --branch gh-pages $(shell git config --get remote.origin.url) website
 	cp browser/thingamajig.js website/thingamajig.js
 	cd website && git add thingamajig.js
 	cd website && git commit -m "$(shell git log -1 --pretty=%B)"
