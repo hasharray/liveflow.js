@@ -8,6 +8,8 @@ var currentScript = (function() {
   return scripts[scripts.length - 1];
 }());
 
+var documentElement = document.documentElement;
+
 var interval = 250;
 if (currentScript.hasAttribute('data-interval')) {
   interval = Number(currentScript.getAttribute('data-interval'));
@@ -27,87 +29,7 @@ var headers = {};
 var requests = {};
 var contents = {};
 
-var root = document.documentElement;
-if (!root.hasAttribute('live')) {
-  document.write('<plaintext>');
-  document.onreadystatechange = function() {
-    if (root.hasAttribute('live')) {
-      return;
-    }
-
-    if (document.readyState != 'interactive') {
-      return;
-    }
-
-    root.setAttribute('live', '');
-
-    var outerHTML = root.outerHTML
-      .replace(/<\/head><body><plaintext>/i, '')
-      .replace(/<\/plaintext>[\S\s]*$/i, '')
-      .replace(/(?!&amp;)&lt;/g, '<')
-      .replace(/(?!&amp;)&gt;/g, '>');
-
-    var head = document.createElement('head');
-    head.innerHTML = /<head[\S\s]*?>[\S\s]*<\/head>/i.exec(outerHTML);
-
-    var body = document.createElement('body');
-    body.innerHTML = /<body[\S\s]*?>[\S\s]*<\/body>/i.exec(outerHTML);
-
-    var scripts = [];
-    scripts.push.apply(scripts, head.getElementsByTagName('script'));
-    scripts.push.apply(scripts, body.getElementsByTagName('script'));
-
-    for (var i = 0; i < scripts.length; i++) {
-      var script = scripts[i];
-      if (exclude.test(script.src) || !include.test(script.src)) {
-        continue;
-      }
-
-      if (currentScript.src == script.src) {
-        continue;
-      }
-
-      script.text = [
-        'script.type = \'thingamajig/javascript\';',
-        'script.text = unescape(\'' + escape(script.text) + '\');',
-      ].join('\n');
-
-      if (script.src) {
-        script.text = [
-          script.text,
-          'script.src = \'' + script.getAttribute('src') + '\';',
-          'script.reload(script.async);'
-        ].join('\n');
-
-        script.removeAttribute('src');
-      } else {
-        script.text = [
-          script.text,
-          'script.reload(false);'
-        ].join('\n');
-      }
-
-      script.text = [
-        '(function(script) {',
-        script.text,
-        '}(document.currentScript || document.scripts[document.scripts.length - 1]));',
-      ].join('\n');
-    }
-
-    var documentHTML = outerHTML
-      .replace(/^/, '<!DOCTYPE html>\n')
-      .replace(/<(head[\S\s]*?)>([\S\s]*)<\/(head)>/i, [
-        '<$1>', head.innerHTML, '</$3>',
-      ].join(''))
-      .replace(/<(body[\S\s]*?)>([\S\s]*)<\/(body)>/i, [
-        '<$1>', body.innerHTML,'</$3>',
-      ].join(''));
-
-    document.open();
-    document.write(documentHTML);
-    document.close();
-  };
-} else {
+if (documentElement.hasAttribute('live')) {
   var revaluate = require('revaluate');
   var morphdom = require('morphdom');
 
@@ -147,7 +69,7 @@ if (!root.hasAttribute('live')) {
     var filename = this.title;
     if (this.src) {
       filename = this.src
-        .replace(/[?&]reload=.*/, '');
+      .replace(/[?&]reload=.*/, '');
     }
 
     revaluate(content, filename, function(output) {
@@ -159,14 +81,14 @@ if (!root.hasAttribute('live')) {
     this.dispatchEvent(reload);
   };
 
-  HTMLScriptElement.prototype.reload = function(defer) {
+  HTMLScriptElement.prototype.reload = function() {
     if (this.type != 'thingamajig/javascript') {
       return location.reload();
     }
 
     if (this.src) {
       var xhr = new XMLHttpRequest();
-      xhr.open('GET', this.src, defer);
+      xhr.open('GET', this.src, true);
       xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
           this.inject(xhr.responseText);
@@ -209,10 +131,10 @@ if (!root.hasAttribute('live')) {
           element.reload();
         } else {
           var url = value
-            .replace(/[?&]reload=.*/, '')
-            .replace(/.*/, function(value) {
-              return value + (/\?/.test(value) ? '&' : '?') + 'reload=' + Date.now();
-            });
+          .replace(/[?&]reload=.*/, '')
+          .replace(/.*/, function(value) {
+            return value + (/\?/.test(value) ? '&' : '?') + 'reload=' + Date.now();
+          });
 
           element.setAttribute(name, url);
 
@@ -293,7 +215,7 @@ if (!root.hasAttribute('live')) {
           var xhr = (requests[url] = new XMLHttpRequest());
           xhr.open('HEAD', url, true);
           xhr.onreadystatechange = function() {
-              if (xhr.readyState == 4) {
+            if (xhr.readyState == 4) {
               if (headers[url]) {
                 var names = [ 'Last-Modified' ];
 
@@ -336,9 +258,1688 @@ if (!root.hasAttribute('live')) {
       setTimeout(next, interval);
     }, 0);
   };
+} else {
+  document.write('<plaintext>');
+  document.onreadystatechange = function() {
+    if (documentElement.hasAttribute('live')) {
+      return;
+    }
+
+    if (document.readyState != 'interactive') {
+      return;
+    }
+
+    documentElement.setAttribute('live', '');
+
+    var outerHTML = documentElement.outerHTML
+      .replace(/<\/head><body><plaintext>/i, '')
+      .replace(/<\/plaintext>[\S\s]*$/i, '')
+      .replace(/(?!&amp;)&lt;/g, '<')
+      .replace(/(?!&amp;)&gt;/g, '>');
+
+    var head = document.createElement('head');
+    head.innerHTML = /<head[\S\s]*?>[\S\s]*<\/head>/i.exec(outerHTML);
+
+    var body = document.createElement('body');
+    body.innerHTML = /<body[\S\s]*?>[\S\s]*<\/body>/i.exec(outerHTML);
+
+    var scripts = [];
+    scripts.push.apply(scripts, head.getElementsByTagName('script'));
+    scripts.push.apply(scripts, body.getElementsByTagName('script'));
+
+    for (var i = 0; i < scripts.length; i++) {
+      var script = scripts[i];
+      if (exclude.test(script.src) || !include.test(script.src)) {
+        continue;
+      }
+
+      if (currentScript.src == script.src) {
+        continue;
+      }
+
+      if (script.hasAttribute('type')) {
+        script.setAttribute('data-type', script.getAttribute('type'));
+        script.removeAttribute('type');
+      }
+
+      if (script.hasAttribute('id')) {
+        script.setAttribute('data-id', script.id);
+      }
+
+      script.setAttribute('id', 'script-' + i);
+
+      if (script.hasAttribute('src')) {
+        script.text = [
+          '  script.type = \'thingamajig/javascript\';',
+          '  script.src = \'' + script.getAttribute('src') + '\';',
+          '  script.text = \'\';',
+          '',
+          '  var xhr = new XMLHttpRequest();',
+          '  xhr.open(\'GET\', script.src, script.async);',
+          '  xhr.onreadystatechange = function() {',
+          '    if (xhr.readyState == 4) {',
+          '      script.inject(xhr.responseText);',
+          '    }',
+          '  };',
+          '',
+          '  xhr.send(null);',
+        ].join('\n');
+
+        script.removeAttribute('src');
+      } else {
+        script.text = [
+          '  script.type = \'thingamajig/javascript\';',
+          '  script.text = unescape(\'' + escape(script.text) + '\');',
+          '  script.inject(script.text)',
+        ].join('\n');
+      }
+
+      script.text = [
+        '(function(script) {',
+        '  if (script.hasAttribute(\'data-id\')) {',
+        '    script.setAttribute(\'id\', script.getAttribute(\'data-id\'));',
+        '    script.removeAttribute(\'data-id\');',
+        '  } else {',
+        '    script.removeAttribute(\'id\');',
+        '  }',
+        '',
+        '  script.removeAttribute(\'script\')',
+        script.text,
+        '}(document.getElementById(\'' + script.getAttribute('id') + '\')));',
+      ].join('\n');
+    }
+
+    var documentHTML = outerHTML
+      .replace(/^/, '<!DOCTYPE html>\n')
+      .replace(/<(head[\S\s]*?)>([\S\s]*)<\/(head)>/i, [
+        '<$1>', head.innerHTML, '</$3>',
+      ].join(''))
+      .replace(/<(body[\S\s]*?)>([\S\s]*)<\/(body)>/i, [
+        '<$1>', body.innerHTML,'</$3>',
+      ].join(''));
+
+    document.open();
+    document.write(documentHTML);
+    document.close();
+  };
 }
 
-},{"morphdom":4,"revaluate":6}],2:[function(require,module,exports){
+},{"morphdom":2,"revaluate":3}],2:[function(require,module,exports){
+'use strict';
+// Create a range object for efficently rendering strings to elements.
+var range;
+
+var doc = typeof document !== 'undefined' && document;
+
+var testEl = doc ?
+    doc.body || doc.createElement('div') :
+    {};
+
+var NS_XHTML = 'http://www.w3.org/1999/xhtml';
+
+var ELEMENT_NODE = 1;
+var TEXT_NODE = 3;
+var COMMENT_NODE = 8;
+
+// Fixes <https://github.com/patrick-steele-idem/morphdom/issues/32>
+// (IE7+ support) <=IE7 does not support el.hasAttribute(name)
+var hasAttributeNS;
+
+if (testEl.hasAttributeNS) {
+    hasAttributeNS = function(el, namespaceURI, name) {
+        return el.hasAttributeNS(namespaceURI, name);
+    };
+} else if (testEl.hasAttribute) {
+    hasAttributeNS = function(el, namespaceURI, name) {
+        return el.hasAttribute(name);
+    };
+} else {
+    hasAttributeNS = function(el, namespaceURI, name) {
+        return !!el.getAttributeNode(name);
+    };
+}
+
+function toElement(str) {
+    if (!range && doc.createRange) {
+        range = doc.createRange();
+        range.selectNode(doc.body);
+    }
+
+    var fragment;
+    if (range && range.createContextualFragment) {
+        fragment = range.createContextualFragment(str);
+    } else {
+        fragment = doc.createElement('body');
+        fragment.innerHTML = str;
+    }
+    return fragment.childNodes[0];
+}
+
+function syncBooleanAttrProp(fromEl, toEl, name) {
+    if (fromEl[name] !== toEl[name]) {
+        fromEl[name] = toEl[name];
+        if (fromEl[name]) {
+            fromEl.setAttribute(name, '');
+        } else {
+            fromEl.removeAttribute(name, '');
+        }
+    }
+}
+
+var specialElHandlers = {
+    /**
+     * Needed for IE. Apparently IE doesn't think that "selected" is an
+     * attribute when reading over the attributes using selectEl.attributes
+     */
+    OPTION: function(fromEl, toEl) {
+        syncBooleanAttrProp(fromEl, toEl, 'selected');
+    },
+    /**
+     * The "value" attribute is special for the <input> element since it sets
+     * the initial value. Changing the "value" attribute without changing the
+     * "value" property will have no effect since it is only used to the set the
+     * initial value.  Similar for the "checked" attribute, and "disabled".
+     */
+    INPUT: function(fromEl, toEl) {
+        syncBooleanAttrProp(fromEl, toEl, 'checked');
+        syncBooleanAttrProp(fromEl, toEl, 'disabled');
+
+        if (fromEl.value !== toEl.value) {
+            fromEl.value = toEl.value;
+        }
+
+        if (!hasAttributeNS(toEl, null, 'value')) {
+            fromEl.removeAttribute('value');
+        }
+    },
+
+    TEXTAREA: function(fromEl, toEl) {
+        var newValue = toEl.value;
+        if (fromEl.value !== newValue) {
+            fromEl.value = newValue;
+        }
+
+        if (fromEl.firstChild) {
+            // Needed for IE. Apparently IE sets the placeholder as the
+            // node value and vise versa. This ignores an empty update.
+            if (newValue === '' && fromEl.firstChild.nodeValue === fromEl.placeholder) {
+                return;
+            }
+
+            fromEl.firstChild.nodeValue = newValue;
+        }
+    }
+};
+
+function noop() {}
+
+/**
+ * Returns true if two node's names are the same.
+ *
+ * NOTE: We don't bother checking `namespaceURI` because you will never find two HTML elements with the same
+ *       nodeName and different namespace URIs.
+ *
+ * @param {Element} a
+ * @param {Element} b The target element
+ * @return {boolean}
+ */
+function compareNodeNames(fromEl, toEl) {
+    var fromNodeName = fromEl.nodeName;
+    var toNodeName = toEl.nodeName;
+
+    if (fromNodeName === toNodeName) {
+        return true;
+    }
+
+    if (toEl.actualize &&
+        fromNodeName.charCodeAt(0) < 91 && /* from tag name is upper case */
+        toNodeName.charCodeAt(0) > 90 /* target tag name is lower case */) {
+        // If the target element is a virtual DOM node then we may need to normalize the tag name
+        // before comparing. Normal HTML elements that are in the "http://www.w3.org/1999/xhtml"
+        // are converted to upper case
+        return fromNodeName === toNodeName.toUpperCase();
+    } else {
+        return false;
+    }
+}
+
+/**
+ * Create an element, optionally with a known namespace URI.
+ *
+ * @param {string} name the element name, e.g. 'div' or 'svg'
+ * @param {string} [namespaceURI] the element's namespace URI, i.e. the value of
+ * its `xmlns` attribute or its inferred namespace.
+ *
+ * @return {Element}
+ */
+function createElementNS(name, namespaceURI) {
+    return !namespaceURI || namespaceURI === NS_XHTML ?
+        doc.createElement(name) :
+        doc.createElementNS(namespaceURI, name);
+}
+
+/**
+ * Loop over all of the attributes on the target node and make sure the original
+ * DOM node has the same attributes. If an attribute found on the original node
+ * is not on the new node then remove it from the original node.
+ *
+ * @param  {Element} fromNode
+ * @param  {Element} toNode
+ */
+function morphAttrs(fromNode, toNode) {
+    if (toNode.assignAttributes) {
+        toNode.assignAttributes(fromNode);
+    } else {
+        var attrs = toNode.attributes;
+        var i;
+        var attr;
+        var attrName;
+        var attrNamespaceURI;
+        var attrValue;
+        var fromValue;
+
+        for (i = attrs.length - 1; i >= 0; --i) {
+            attr = attrs[i];
+            attrName = attr.name;
+            attrNamespaceURI = attr.namespaceURI;
+            attrValue = attr.value;
+
+            if (attrNamespaceURI) {
+                attrName = attr.localName || attrName;
+                fromValue = fromNode.getAttributeNS(attrNamespaceURI, attrName);
+
+                if (fromValue !== attrValue) {
+                    fromNode.setAttributeNS(attrNamespaceURI, attrName, attrValue);
+                }
+            } else {
+                fromValue = fromNode.getAttribute(attrName);
+
+                if (fromValue !== attrValue) {
+                    fromNode.setAttribute(attrName, attrValue);
+                }
+            }
+        }
+
+        // Remove any extra attributes found on the original DOM element that
+        // weren't found on the target element.
+        attrs = fromNode.attributes;
+
+        for (i = attrs.length - 1; i >= 0; --i) {
+            attr = attrs[i];
+            if (attr.specified !== false) {
+                attrName = attr.name;
+                attrNamespaceURI = attr.namespaceURI;
+
+                if (attrNamespaceURI) {
+                    attrName = attr.localName || attrName;
+
+                    if (!hasAttributeNS(toNode, attrNamespaceURI, attrName)) {
+                        fromNode.removeAttributeNS(attrNamespaceURI, attrName);
+                    }
+                } else {
+                    if (!hasAttributeNS(toNode, null, attrName)) {
+                        fromNode.removeAttribute(attrName);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Copies the children of one DOM element to another DOM element
+ */
+function moveChildren(fromEl, toEl) {
+    var curChild = fromEl.firstChild;
+    while (curChild) {
+        var nextChild = curChild.nextSibling;
+        toEl.appendChild(curChild);
+        curChild = nextChild;
+    }
+    return toEl;
+}
+
+function defaultGetNodeKey(node) {
+    return node.id;
+}
+
+function morphdom(fromNode, toNode, options) {
+    if (!options) {
+        options = {};
+    }
+
+    if (typeof toNode === 'string') {
+        if (fromNode.nodeName === '#document' || fromNode.nodeName === 'HTML') {
+            var toNodeHtml = toNode;
+            toNode = doc.createElement('html');
+            toNode.innerHTML = toNodeHtml;
+        } else {
+            toNode = toElement(toNode);
+        }
+    }
+
+    var getNodeKey = options.getNodeKey || defaultGetNodeKey;
+    var onBeforeNodeAdded = options.onBeforeNodeAdded || noop;
+    var onNodeAdded = options.onNodeAdded || noop;
+    var onBeforeElUpdated = options.onBeforeElUpdated || noop;
+    var onElUpdated = options.onElUpdated || noop;
+    var onBeforeNodeDiscarded = options.onBeforeNodeDiscarded || noop;
+    var onNodeDiscarded = options.onNodeDiscarded || noop;
+    var onBeforeElChildrenUpdated = options.onBeforeElChildrenUpdated || noop;
+    var childrenOnly = options.childrenOnly === true;
+
+    // This object is used as a lookup to quickly find all keyed elements in the original DOM tree.
+    var fromNodesLookup = {};
+    var keyedRemovalList;
+
+    function addKeyedRemoval(key) {
+        if (keyedRemovalList) {
+            keyedRemovalList.push(key);
+        } else {
+            keyedRemovalList = [key];
+        }
+    }
+
+    function walkDiscardedChildNodes(node, skipKeyedNodes) {
+        if (node.nodeType === ELEMENT_NODE) {
+            var curChild = node.firstChild;
+            while (curChild) {
+
+                var key = undefined;
+
+                if (skipKeyedNodes && (key = getNodeKey(curChild))) {
+                    // If we are skipping keyed nodes then we add the key
+                    // to a list so that it can be handled at the very end.
+                    addKeyedRemoval(key);
+                } else {
+                    // Only report the node as discarded if it is not keyed. We do this because
+                    // at the end we loop through all keyed elements that were unmatched
+                    // and then discard them in one final pass.
+                    onNodeDiscarded(curChild);
+                    if (curChild.firstChild) {
+                        walkDiscardedChildNodes(curChild, skipKeyedNodes);
+                    }
+                }
+
+                curChild = curChild.nextSibling;
+            }
+        }
+    }
+
+    /**
+     * Removes a DOM node out of the original DOM
+     *
+     * @param  {Node} node The node to remove
+     * @param  {Node} parentNode The nodes parent
+     * @param  {Boolean} skipKeyedNodes If true then elements with keys will be skipped and not discarded.
+     * @return {undefined}
+     */
+    function removeNode(node, parentNode, skipKeyedNodes) {
+        if (onBeforeNodeDiscarded(node) === false) {
+            return;
+        }
+
+        if (parentNode) {
+            parentNode.removeChild(node);
+        }
+
+        onNodeDiscarded(node);
+        walkDiscardedChildNodes(node, skipKeyedNodes);
+    }
+
+    // // TreeWalker implementation is no faster, but keeping this around in case this changes in the future
+    // function indexTree(root) {
+    //     var treeWalker = document.createTreeWalker(
+    //         root,
+    //         NodeFilter.SHOW_ELEMENT);
+    //
+    //     var el;
+    //     while((el = treeWalker.nextNode())) {
+    //         var key = getNodeKey(el);
+    //         if (key) {
+    //             fromNodesLookup[key] = el;
+    //         }
+    //     }
+    // }
+
+    // // NodeIterator implementation is no faster, but keeping this around in case this changes in the future
+    //
+    // function indexTree(node) {
+    //     var nodeIterator = document.createNodeIterator(node, NodeFilter.SHOW_ELEMENT);
+    //     var el;
+    //     while((el = nodeIterator.nextNode())) {
+    //         var key = getNodeKey(el);
+    //         if (key) {
+    //             fromNodesLookup[key] = el;
+    //         }
+    //     }
+    // }
+
+    function indexTree(node) {
+        if (node.nodeType === ELEMENT_NODE) {
+            var curChild = node.firstChild;
+            while (curChild) {
+                var key = getNodeKey(curChild);
+                if (key) {
+                    fromNodesLookup[key] = curChild;
+                }
+
+                // Walk recursively
+                indexTree(curChild);
+
+                curChild = curChild.nextSibling;
+            }
+        }
+    }
+
+    indexTree(fromNode);
+
+    function handleNodeAdded(el) {
+        onNodeAdded(el);
+
+        var curChild = el.firstChild;
+        while (curChild) {
+            var nextSibling = curChild.nextSibling;
+
+            var key = getNodeKey(curChild);
+            if (key) {
+                var unmatchedFromEl = fromNodesLookup[key];
+                if (unmatchedFromEl && compareNodeNames(curChild, unmatchedFromEl)) {
+                    curChild.parentNode.replaceChild(unmatchedFromEl, curChild);
+                    morphEl(unmatchedFromEl, curChild);
+                }
+            }
+
+            handleNodeAdded(curChild);
+            curChild = nextSibling;
+        }
+    }
+
+    function morphEl(fromEl, toEl, childrenOnly) {
+        var toElKey = getNodeKey(toEl);
+        var curFromNodeKey;
+
+        if (toElKey) {
+            // If an element with an ID is being morphed then it is will be in the final
+            // DOM so clear it out of the saved elements collection
+            delete fromNodesLookup[toElKey];
+        }
+
+        if (toNode.isSameNode && toNode.isSameNode(fromNode)) {
+            return;
+        }
+
+        if (!childrenOnly) {
+            if (onBeforeElUpdated(fromEl, toEl) === false) {
+                return;
+            }
+
+            morphAttrs(fromEl, toEl);
+            onElUpdated(fromEl);
+
+            if (onBeforeElChildrenUpdated(fromEl, toEl) === false) {
+                return;
+            }
+        }
+
+        if (fromEl.nodeName !== 'TEXTAREA') {
+            var curToNodeChild = toEl.firstChild;
+            var curFromNodeChild = fromEl.firstChild;
+            var curToNodeKey;
+
+            var fromNextSibling;
+            var toNextSibling;
+            var matchingFromEl;
+
+            outer: while (curToNodeChild) {
+                toNextSibling = curToNodeChild.nextSibling;
+                curToNodeKey = getNodeKey(curToNodeChild);
+
+                while (curFromNodeChild) {
+                    fromNextSibling = curFromNodeChild.nextSibling;
+
+                    if (curToNodeChild.isSameNode && curToNodeChild.isSameNode(curFromNodeChild)) {
+                        curToNodeChild = toNextSibling;
+                        curFromNodeChild = fromNextSibling;
+                        continue outer;
+                    }
+
+                    curFromNodeKey = getNodeKey(curFromNodeChild);
+
+                    var curFromNodeType = curFromNodeChild.nodeType;
+
+                    var isCompatible = undefined;
+
+                    if (curFromNodeType === curToNodeChild.nodeType) {
+                        if (curFromNodeType === ELEMENT_NODE) {
+                            // Both nodes being compared are Element nodes
+
+                            if (curToNodeKey) {
+                                // The target node has a key so we want to match it up with the correct element
+                                // in the original DOM tree
+                                if (curToNodeKey !== curFromNodeKey) {
+                                    // The current element in the original DOM tree does not have a matching key so
+                                    // let's check our lookup to see if there is a matching element in the original
+                                    // DOM tree
+                                    if ((matchingFromEl = fromNodesLookup[curToNodeKey])) {
+                                        if (curFromNodeChild.nextSibling === matchingFromEl) {
+                                            // Special case for single element removals. To avoid removing the original
+                                            // DOM node out of the tree (since that can break CSS transitions, etc.),
+                                            // we will instead discard the current node and wait until the next
+                                            // iteration to properly match up the keyed target element with its matching
+                                            // element in the original tree
+                                            isCompatible = false;
+                                        } else {
+                                            // We found a matching keyed element somewhere in the original DOM tree.
+                                            // Let's moving the original DOM node into the current position and morph
+                                            // it.
+
+                                            // NOTE: We use insertBefore instead of replaceChild because we want to go through
+                                            // the `removeNode()` function for the node that is being discarded so that
+                                            // all lifecycle hooks are correctly invoked
+                                            fromEl.insertBefore(matchingFromEl, curFromNodeChild);
+
+                                            fromNextSibling = curFromNodeChild.nextSibling;
+
+                                            if (curFromNodeKey) {
+                                                // Since the node is keyed it might be matched up later so we defer
+                                                // the actual removal to later
+                                                addKeyedRemoval(curFromNodeKey);
+                                            } else {
+                                                // NOTE: we skip nested keyed nodes from being removed since there is
+                                                //       still a chance they will be matched up later
+                                                removeNode(curFromNodeChild, fromEl, true /* skip keyed nodes */);
+                                            }
+
+                                            curFromNodeChild = matchingFromEl;
+                                        }
+                                    } else {
+                                        // The nodes are not compatible since the "to" node has a key and there
+                                        // is no matching keyed node in the source tree
+                                        isCompatible = false;
+                                    }
+                                }
+                            } else if (curFromNodeKey) {
+                                // The original has a key
+                                isCompatible = false;
+                            }
+
+                            isCompatible = isCompatible !== false && compareNodeNames(curFromNodeChild, curToNodeChild);
+                            if (isCompatible) {
+                                // We found compatible DOM elements so transform
+                                // the current "from" node to match the current
+                                // target DOM node.
+                                morphEl(curFromNodeChild, curToNodeChild);
+                            }
+
+                        } else if (curFromNodeType === TEXT_NODE || curFromNodeType == COMMENT_NODE) {
+                            // Both nodes being compared are Text or Comment nodes
+                            isCompatible = true;
+                            // Simply update nodeValue on the original node to
+                            // change the text value
+                            curFromNodeChild.nodeValue = curToNodeChild.nodeValue;
+                        }
+                    }
+
+                    if (isCompatible) {
+                        // Advance both the "to" child and the "from" child since we found a match
+                        curToNodeChild = toNextSibling;
+                        curFromNodeChild = fromNextSibling;
+                        continue outer;
+                    }
+
+                    // No compatible match so remove the old node from the DOM and continue trying to find a
+                    // match in the original DOM. However, we only do this if the from node is not keyed
+                    // since it is possible that a keyed node might match up with a node somewhere else in the
+                    // target tree and we don't want to discard it just yet since it still might find a
+                    // home in the final DOM tree. After everything is done we will remove any keyed nodes
+                    // that didn't find a home
+                    if (curFromNodeKey) {
+                        // Since the node is keyed it might be matched up later so we defer
+                        // the actual removal to later
+                        addKeyedRemoval(curFromNodeKey);
+                    } else {
+                        // NOTE: we skip nested keyed nodes from being removed since there is
+                        //       still a chance they will be matched up later
+                        removeNode(curFromNodeChild, fromEl, true /* skip keyed nodes */);
+                    }
+
+                    curFromNodeChild = fromNextSibling;
+                }
+
+                // If we got this far then we did not find a candidate match for
+                // our "to node" and we exhausted all of the children "from"
+                // nodes. Therefore, we will just append the current "to" node
+                // to the end
+                if (curToNodeKey && (matchingFromEl = fromNodesLookup[curToNodeKey]) && compareNodeNames(matchingFromEl, curToNodeChild)) {
+                    fromEl.appendChild(matchingFromEl);
+                    morphEl(matchingFromEl, curToNodeChild);
+                } else {
+                    var onBeforeNodeAddedResult = onBeforeNodeAdded(curToNodeChild);
+                    if (onBeforeNodeAddedResult !== false) {
+                        if (onBeforeNodeAddedResult) {
+                            curToNodeChild = onBeforeNodeAddedResult;
+                        }
+
+                        if (curToNodeChild.actualize) {
+                            curToNodeChild = curToNodeChild.actualize(fromEl.ownerDocument || doc);
+                        }
+                        fromEl.appendChild(curToNodeChild);
+                        handleNodeAdded(curToNodeChild);
+                    }
+                }
+
+                curToNodeChild = toNextSibling;
+                curFromNodeChild = fromNextSibling;
+            }
+
+            // We have processed all of the "to nodes". If curFromNodeChild is
+            // non-null then we still have some from nodes left over that need
+            // to be removed
+            while (curFromNodeChild) {
+                fromNextSibling = curFromNodeChild.nextSibling;
+                if ((curFromNodeKey = getNodeKey(curFromNodeChild))) {
+                    // Since the node is keyed it might be matched up later so we defer
+                    // the actual removal to later
+                    addKeyedRemoval(curFromNodeKey);
+                } else {
+                    // NOTE: we skip nested keyed nodes from being removed since there is
+                    //       still a chance they will be matched up later
+                    removeNode(curFromNodeChild, fromEl, true /* skip keyed nodes */);
+                }
+                curFromNodeChild = fromNextSibling;
+            }
+        }
+
+        var specialElHandler = specialElHandlers[fromEl.nodeName];
+        if (specialElHandler) {
+            specialElHandler(fromEl, toEl);
+        }
+    } // END: morphEl(...)
+
+    var morphedNode = fromNode;
+    var morphedNodeType = morphedNode.nodeType;
+    var toNodeType = toNode.nodeType;
+
+    if (!childrenOnly) {
+        // Handle the case where we are given two DOM nodes that are not
+        // compatible (e.g. <div> --> <span> or <div> --> TEXT)
+        if (morphedNodeType === ELEMENT_NODE) {
+            if (toNodeType === ELEMENT_NODE) {
+                if (!compareNodeNames(fromNode, toNode)) {
+                    onNodeDiscarded(fromNode);
+                    morphedNode = moveChildren(fromNode, createElementNS(toNode.nodeName, toNode.namespaceURI));
+                }
+            } else {
+                // Going from an element node to a text node
+                morphedNode = toNode;
+            }
+        } else if (morphedNodeType === TEXT_NODE || morphedNodeType === COMMENT_NODE) { // Text or comment node
+            if (toNodeType === morphedNodeType) {
+                morphedNode.nodeValue = toNode.nodeValue;
+                return morphedNode;
+            } else {
+                // Text node to something else
+                morphedNode = toNode;
+            }
+        }
+    }
+
+    if (morphedNode === toNode) {
+        // The "to node" was not compatible with the "from node" so we had to
+        // toss out the "from node" and use the "to node"
+        onNodeDiscarded(fromNode);
+    } else {
+        morphEl(morphedNode, toNode, childrenOnly);
+
+        // We now need to loop over any keyed nodes that might need to be
+        // removed. We only do the removal if we know that the keyed node
+        // never found a match. When a keyed node is matched up we remove
+        // it out of fromNodesLookup and we use fromNodesLookup to determine
+        // if a keyed node has been matched up or not
+        if (keyedRemovalList) {
+            for (var i=0, len=keyedRemovalList.length; i<len; i++) {
+                var elToRemove = fromNodesLookup[keyedRemovalList[i]];
+                if (elToRemove) {
+                    removeNode(elToRemove, elToRemove.parentNode, false);
+                }
+            }
+        }
+    }
+
+    if (!childrenOnly && morphedNode !== fromNode && fromNode.parentNode) {
+        if (morphedNode.actualize) {
+            morphedNode = morphedNode.actualize(fromNode.ownerDocument || doc);
+        }
+        // If we had to swap out the from node with a new node because the old
+        // node was not compatible with the target node then we need to
+        // replace the old DOM node in the original DOM tree. This is only
+        // possible if the original DOM node was part of a DOM tree which
+        // we know is the case if it has a parent node.
+        fromNode.parentNode.replaceChild(morphedNode, fromNode);
+    }
+
+    return morphedNode;
+}
+
+module.exports = morphdom;
+
+},{}],3:[function(require,module,exports){
+var diff = require('fast-diff');
+var reshift = require('reshift');
+
+__call = [];
+__function = [];
+__cache = {};
+
+module.exports = function revaluate(content, name, evaluator) {
+  var cache = __cache[name] || {
+    content: '',
+  };
+
+  var diffs = diff(cache.content, content);
+
+  var indices = [];
+  var offset = 0;
+  for (var i = 0; i < diffs.length; i++) {
+    var type = diffs[i][0];
+    var text = diffs[i][1];
+
+    for (var j = 0; j < text.length; j++) {
+      if (type == -1) {
+        offset++;
+      } else if (type == 0) {
+        indices.push(offset);
+        offset++;
+      } else {
+        indices.push(null);
+      }
+    }
+  }
+
+  var key = function(node) {
+    var start = indices[node.start];
+    var end = indices[node.end];
+
+    return start + ',' + end;
+  };
+
+  var range = function(node) {
+    return node.start + ',' + node.end;
+  };
+
+  var entries = {};
+  var output = reshift(content, function(node) {
+    if (node.type == 'FunctionExpression' || node.type == 'FunctionDeclaration') {
+      var entry = entries[range(node)] = (
+        cache[key(node)] || entries[range(node)] || {}
+      );
+
+      entry.node = node;
+
+      if (entry.index == undefined) {
+        entry.index = __function.length++;
+      }
+
+      var index = entry.index;
+      var name = node.id ? node.id.name : '';
+      var code = node.toString();
+
+      if (name.length > 0) {
+        code = code.replace(name, '');
+      }
+
+      __function[index] = '(' + code + ')';
+
+      return [
+        'function $name() {',
+        '  if (__function[$index].length > 0) {',
+        '    __function[$index] = eval(__function[$index]);',
+        '  }',
+        '  return __function[$index].apply(this, arguments);',
+        '}',
+      ].join('\n')
+        .replace(/\$index/g, index)
+        .replace(/\$name/g, name);
+    }
+
+    if (node.type == 'CallExpression') {
+      var scope = (function next(node) {
+        if (node.type == 'Program') {
+          return node;
+        }
+
+        if (node.type == 'FunctionExpression' || node.type == 'FunctionDeclaration') {
+          return node;
+        }
+
+        return next(node.parent);
+      }(node.parent));
+      if (scope.type != 'Program') {
+        return node.toString();
+      }
+
+      var entry = entries[range(node)] = (
+        cache[key(node)] || entries[range(node)] || {}
+      );
+
+      entry.node = node;
+
+      var signature = JSON.stringify(node, [
+        'name',
+        'arguments',
+        'value',
+      ]);
+
+      if (entry.signature != signature) {
+        entry.signature = signature;
+        entry.index = __call.length++;
+      }
+
+      var index = entry.index;
+      var code = node.toString();
+
+      return [
+        '($index in __call ? __call[$index] : __call[$index] = $code)',
+      ].join('\n')
+        .replace(/\$index/g, index)
+        .replace(/\$code/g, code);
+    }
+
+    return node.toString();
+  });
+
+  for (var key in cache) {
+    var entry = cache[key];
+    var node = entry.node;
+    var dead = true;
+
+    for (var key in entries) {
+      if (entry == entries[key]) {
+        dead = false;
+        break;
+      }
+    }
+
+    if (node == null || dead == false) {
+      continue;
+    }
+
+    if (node.type == 'FunctionExpression' || node.type == 'FunctionDeclaration') {
+      __function[entry.index] = '(function() { })';
+    }
+  }
+
+  __cache[name] = entries;
+  __cache[name].content = content;
+
+  return evaluator ? evaluator(output) : output;
+}
+
+},{"fast-diff":4,"reshift":5}],4:[function(require,module,exports){
+/**
+ * This library modifies the diff-patch-match library by Neil Fraser
+ * by removing the patch and match functionality and certain advanced
+ * options in the diff function. The original license is as follows:
+ *
+ * ===
+ *
+ * Diff Match and Patch
+ *
+ * Copyright 2006 Google Inc.
+ * http://code.google.com/p/google-diff-match-patch/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+/**
+ * The data structure representing a diff is an array of tuples:
+ * [[DIFF_DELETE, 'Hello'], [DIFF_INSERT, 'Goodbye'], [DIFF_EQUAL, ' world.']]
+ * which means: delete 'Hello', add 'Goodbye' and keep ' world.'
+ */
+var DIFF_DELETE = -1;
+var DIFF_INSERT = 1;
+var DIFF_EQUAL = 0;
+
+
+/**
+ * Find the differences between two texts.  Simplifies the problem by stripping
+ * any common prefix or suffix off the texts before diffing.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @param {Int} cursor_pos Expected edit position in text1 (optional)
+ * @return {Array} Array of diff tuples.
+ */
+function diff_main(text1, text2, cursor_pos) {
+  // Check for equality (speedup).
+  if (text1 == text2) {
+    if (text1) {
+      return [[DIFF_EQUAL, text1]];
+    }
+    return [];
+  }
+
+  // Check cursor_pos within bounds
+  if (cursor_pos < 0 || text1.length < cursor_pos) {
+    cursor_pos = null;
+  }
+
+  // Trim off common prefix (speedup).
+  var commonlength = diff_commonPrefix(text1, text2);
+  var commonprefix = text1.substring(0, commonlength);
+  text1 = text1.substring(commonlength);
+  text2 = text2.substring(commonlength);
+
+  // Trim off common suffix (speedup).
+  commonlength = diff_commonSuffix(text1, text2);
+  var commonsuffix = text1.substring(text1.length - commonlength);
+  text1 = text1.substring(0, text1.length - commonlength);
+  text2 = text2.substring(0, text2.length - commonlength);
+
+  // Compute the diff on the middle block.
+  var diffs = diff_compute_(text1, text2);
+
+  // Restore the prefix and suffix.
+  if (commonprefix) {
+    diffs.unshift([DIFF_EQUAL, commonprefix]);
+  }
+  if (commonsuffix) {
+    diffs.push([DIFF_EQUAL, commonsuffix]);
+  }
+  diff_cleanupMerge(diffs);
+  if (cursor_pos != null) {
+    diffs = fix_cursor(diffs, cursor_pos);
+  }
+  return diffs;
+};
+
+
+/**
+ * Find the differences between two texts.  Assumes that the texts do not
+ * have any common prefix or suffix.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @return {Array} Array of diff tuples.
+ */
+function diff_compute_(text1, text2) {
+  var diffs;
+
+  if (!text1) {
+    // Just add some text (speedup).
+    return [[DIFF_INSERT, text2]];
+  }
+
+  if (!text2) {
+    // Just delete some text (speedup).
+    return [[DIFF_DELETE, text1]];
+  }
+
+  var longtext = text1.length > text2.length ? text1 : text2;
+  var shorttext = text1.length > text2.length ? text2 : text1;
+  var i = longtext.indexOf(shorttext);
+  if (i != -1) {
+    // Shorter text is inside the longer text (speedup).
+    diffs = [[DIFF_INSERT, longtext.substring(0, i)],
+             [DIFF_EQUAL, shorttext],
+             [DIFF_INSERT, longtext.substring(i + shorttext.length)]];
+    // Swap insertions for deletions if diff is reversed.
+    if (text1.length > text2.length) {
+      diffs[0][0] = diffs[2][0] = DIFF_DELETE;
+    }
+    return diffs;
+  }
+
+  if (shorttext.length == 1) {
+    // Single character string.
+    // After the previous speedup, the character can't be an equality.
+    return [[DIFF_DELETE, text1], [DIFF_INSERT, text2]];
+  }
+
+  // Check to see if the problem can be split in two.
+  var hm = diff_halfMatch_(text1, text2);
+  if (hm) {
+    // A half-match was found, sort out the return data.
+    var text1_a = hm[0];
+    var text1_b = hm[1];
+    var text2_a = hm[2];
+    var text2_b = hm[3];
+    var mid_common = hm[4];
+    // Send both pairs off for separate processing.
+    var diffs_a = diff_main(text1_a, text2_a);
+    var diffs_b = diff_main(text1_b, text2_b);
+    // Merge the results.
+    return diffs_a.concat([[DIFF_EQUAL, mid_common]], diffs_b);
+  }
+
+  return diff_bisect_(text1, text2);
+};
+
+
+/**
+ * Find the 'middle snake' of a diff, split the problem in two
+ * and return the recursively constructed diff.
+ * See Myers 1986 paper: An O(ND) Difference Algorithm and Its Variations.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @return {Array} Array of diff tuples.
+ * @private
+ */
+function diff_bisect_(text1, text2) {
+  // Cache the text lengths to prevent multiple calls.
+  var text1_length = text1.length;
+  var text2_length = text2.length;
+  var max_d = Math.ceil((text1_length + text2_length) / 2);
+  var v_offset = max_d;
+  var v_length = 2 * max_d;
+  var v1 = new Array(v_length);
+  var v2 = new Array(v_length);
+  // Setting all elements to -1 is faster in Chrome & Firefox than mixing
+  // integers and undefined.
+  for (var x = 0; x < v_length; x++) {
+    v1[x] = -1;
+    v2[x] = -1;
+  }
+  v1[v_offset + 1] = 0;
+  v2[v_offset + 1] = 0;
+  var delta = text1_length - text2_length;
+  // If the total number of characters is odd, then the front path will collide
+  // with the reverse path.
+  var front = (delta % 2 != 0);
+  // Offsets for start and end of k loop.
+  // Prevents mapping of space beyond the grid.
+  var k1start = 0;
+  var k1end = 0;
+  var k2start = 0;
+  var k2end = 0;
+  for (var d = 0; d < max_d; d++) {
+    // Walk the front path one step.
+    for (var k1 = -d + k1start; k1 <= d - k1end; k1 += 2) {
+      var k1_offset = v_offset + k1;
+      var x1;
+      if (k1 == -d || (k1 != d && v1[k1_offset - 1] < v1[k1_offset + 1])) {
+        x1 = v1[k1_offset + 1];
+      } else {
+        x1 = v1[k1_offset - 1] + 1;
+      }
+      var y1 = x1 - k1;
+      while (x1 < text1_length && y1 < text2_length &&
+             text1.charAt(x1) == text2.charAt(y1)) {
+        x1++;
+        y1++;
+      }
+      v1[k1_offset] = x1;
+      if (x1 > text1_length) {
+        // Ran off the right of the graph.
+        k1end += 2;
+      } else if (y1 > text2_length) {
+        // Ran off the bottom of the graph.
+        k1start += 2;
+      } else if (front) {
+        var k2_offset = v_offset + delta - k1;
+        if (k2_offset >= 0 && k2_offset < v_length && v2[k2_offset] != -1) {
+          // Mirror x2 onto top-left coordinate system.
+          var x2 = text1_length - v2[k2_offset];
+          if (x1 >= x2) {
+            // Overlap detected.
+            return diff_bisectSplit_(text1, text2, x1, y1);
+          }
+        }
+      }
+    }
+
+    // Walk the reverse path one step.
+    for (var k2 = -d + k2start; k2 <= d - k2end; k2 += 2) {
+      var k2_offset = v_offset + k2;
+      var x2;
+      if (k2 == -d || (k2 != d && v2[k2_offset - 1] < v2[k2_offset + 1])) {
+        x2 = v2[k2_offset + 1];
+      } else {
+        x2 = v2[k2_offset - 1] + 1;
+      }
+      var y2 = x2 - k2;
+      while (x2 < text1_length && y2 < text2_length &&
+             text1.charAt(text1_length - x2 - 1) ==
+             text2.charAt(text2_length - y2 - 1)) {
+        x2++;
+        y2++;
+      }
+      v2[k2_offset] = x2;
+      if (x2 > text1_length) {
+        // Ran off the left of the graph.
+        k2end += 2;
+      } else if (y2 > text2_length) {
+        // Ran off the top of the graph.
+        k2start += 2;
+      } else if (!front) {
+        var k1_offset = v_offset + delta - k2;
+        if (k1_offset >= 0 && k1_offset < v_length && v1[k1_offset] != -1) {
+          var x1 = v1[k1_offset];
+          var y1 = v_offset + x1 - k1_offset;
+          // Mirror x2 onto top-left coordinate system.
+          x2 = text1_length - x2;
+          if (x1 >= x2) {
+            // Overlap detected.
+            return diff_bisectSplit_(text1, text2, x1, y1);
+          }
+        }
+      }
+    }
+  }
+  // Diff took too long and hit the deadline or
+  // number of diffs equals number of characters, no commonality at all.
+  return [[DIFF_DELETE, text1], [DIFF_INSERT, text2]];
+};
+
+
+/**
+ * Given the location of the 'middle snake', split the diff in two parts
+ * and recurse.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @param {number} x Index of split point in text1.
+ * @param {number} y Index of split point in text2.
+ * @return {Array} Array of diff tuples.
+ */
+function diff_bisectSplit_(text1, text2, x, y) {
+  var text1a = text1.substring(0, x);
+  var text2a = text2.substring(0, y);
+  var text1b = text1.substring(x);
+  var text2b = text2.substring(y);
+
+  // Compute both diffs serially.
+  var diffs = diff_main(text1a, text2a);
+  var diffsb = diff_main(text1b, text2b);
+
+  return diffs.concat(diffsb);
+};
+
+
+/**
+ * Determine the common prefix of two strings.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {number} The number of characters common to the start of each
+ *     string.
+ */
+function diff_commonPrefix(text1, text2) {
+  // Quick check for common null cases.
+  if (!text1 || !text2 || text1.charAt(0) != text2.charAt(0)) {
+    return 0;
+  }
+  // Binary search.
+  // Performance analysis: http://neil.fraser.name/news/2007/10/09/
+  var pointermin = 0;
+  var pointermax = Math.min(text1.length, text2.length);
+  var pointermid = pointermax;
+  var pointerstart = 0;
+  while (pointermin < pointermid) {
+    if (text1.substring(pointerstart, pointermid) ==
+        text2.substring(pointerstart, pointermid)) {
+      pointermin = pointermid;
+      pointerstart = pointermin;
+    } else {
+      pointermax = pointermid;
+    }
+    pointermid = Math.floor((pointermax - pointermin) / 2 + pointermin);
+  }
+  return pointermid;
+};
+
+
+/**
+ * Determine the common suffix of two strings.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {number} The number of characters common to the end of each string.
+ */
+function diff_commonSuffix(text1, text2) {
+  // Quick check for common null cases.
+  if (!text1 || !text2 ||
+      text1.charAt(text1.length - 1) != text2.charAt(text2.length - 1)) {
+    return 0;
+  }
+  // Binary search.
+  // Performance analysis: http://neil.fraser.name/news/2007/10/09/
+  var pointermin = 0;
+  var pointermax = Math.min(text1.length, text2.length);
+  var pointermid = pointermax;
+  var pointerend = 0;
+  while (pointermin < pointermid) {
+    if (text1.substring(text1.length - pointermid, text1.length - pointerend) ==
+        text2.substring(text2.length - pointermid, text2.length - pointerend)) {
+      pointermin = pointermid;
+      pointerend = pointermin;
+    } else {
+      pointermax = pointermid;
+    }
+    pointermid = Math.floor((pointermax - pointermin) / 2 + pointermin);
+  }
+  return pointermid;
+};
+
+
+/**
+ * Do the two texts share a substring which is at least half the length of the
+ * longer text?
+ * This speedup can produce non-minimal diffs.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {Array.<string>} Five element Array, containing the prefix of
+ *     text1, the suffix of text1, the prefix of text2, the suffix of
+ *     text2 and the common middle.  Or null if there was no match.
+ */
+function diff_halfMatch_(text1, text2) {
+  var longtext = text1.length > text2.length ? text1 : text2;
+  var shorttext = text1.length > text2.length ? text2 : text1;
+  if (longtext.length < 4 || shorttext.length * 2 < longtext.length) {
+    return null;  // Pointless.
+  }
+
+  /**
+   * Does a substring of shorttext exist within longtext such that the substring
+   * is at least half the length of longtext?
+   * Closure, but does not reference any external variables.
+   * @param {string} longtext Longer string.
+   * @param {string} shorttext Shorter string.
+   * @param {number} i Start index of quarter length substring within longtext.
+   * @return {Array.<string>} Five element Array, containing the prefix of
+   *     longtext, the suffix of longtext, the prefix of shorttext, the suffix
+   *     of shorttext and the common middle.  Or null if there was no match.
+   * @private
+   */
+  function diff_halfMatchI_(longtext, shorttext, i) {
+    // Start with a 1/4 length substring at position i as a seed.
+    var seed = longtext.substring(i, i + Math.floor(longtext.length / 4));
+    var j = -1;
+    var best_common = '';
+    var best_longtext_a, best_longtext_b, best_shorttext_a, best_shorttext_b;
+    while ((j = shorttext.indexOf(seed, j + 1)) != -1) {
+      var prefixLength = diff_commonPrefix(longtext.substring(i),
+                                           shorttext.substring(j));
+      var suffixLength = diff_commonSuffix(longtext.substring(0, i),
+                                           shorttext.substring(0, j));
+      if (best_common.length < suffixLength + prefixLength) {
+        best_common = shorttext.substring(j - suffixLength, j) +
+            shorttext.substring(j, j + prefixLength);
+        best_longtext_a = longtext.substring(0, i - suffixLength);
+        best_longtext_b = longtext.substring(i + prefixLength);
+        best_shorttext_a = shorttext.substring(0, j - suffixLength);
+        best_shorttext_b = shorttext.substring(j + prefixLength);
+      }
+    }
+    if (best_common.length * 2 >= longtext.length) {
+      return [best_longtext_a, best_longtext_b,
+              best_shorttext_a, best_shorttext_b, best_common];
+    } else {
+      return null;
+    }
+  }
+
+  // First check if the second quarter is the seed for a half-match.
+  var hm1 = diff_halfMatchI_(longtext, shorttext,
+                             Math.ceil(longtext.length / 4));
+  // Check again based on the third quarter.
+  var hm2 = diff_halfMatchI_(longtext, shorttext,
+                             Math.ceil(longtext.length / 2));
+  var hm;
+  if (!hm1 && !hm2) {
+    return null;
+  } else if (!hm2) {
+    hm = hm1;
+  } else if (!hm1) {
+    hm = hm2;
+  } else {
+    // Both matched.  Select the longest.
+    hm = hm1[4].length > hm2[4].length ? hm1 : hm2;
+  }
+
+  // A half-match was found, sort out the return data.
+  var text1_a, text1_b, text2_a, text2_b;
+  if (text1.length > text2.length) {
+    text1_a = hm[0];
+    text1_b = hm[1];
+    text2_a = hm[2];
+    text2_b = hm[3];
+  } else {
+    text2_a = hm[0];
+    text2_b = hm[1];
+    text1_a = hm[2];
+    text1_b = hm[3];
+  }
+  var mid_common = hm[4];
+  return [text1_a, text1_b, text2_a, text2_b, mid_common];
+};
+
+
+/**
+ * Reorder and merge like edit sections.  Merge equalities.
+ * Any edit section can move as long as it doesn't cross an equality.
+ * @param {Array} diffs Array of diff tuples.
+ */
+function diff_cleanupMerge(diffs) {
+  diffs.push([DIFF_EQUAL, '']);  // Add a dummy entry at the end.
+  var pointer = 0;
+  var count_delete = 0;
+  var count_insert = 0;
+  var text_delete = '';
+  var text_insert = '';
+  var commonlength;
+  while (pointer < diffs.length) {
+    switch (diffs[pointer][0]) {
+      case DIFF_INSERT:
+        count_insert++;
+        text_insert += diffs[pointer][1];
+        pointer++;
+        break;
+      case DIFF_DELETE:
+        count_delete++;
+        text_delete += diffs[pointer][1];
+        pointer++;
+        break;
+      case DIFF_EQUAL:
+        // Upon reaching an equality, check for prior redundancies.
+        if (count_delete + count_insert > 1) {
+          if (count_delete !== 0 && count_insert !== 0) {
+            // Factor out any common prefixies.
+            commonlength = diff_commonPrefix(text_insert, text_delete);
+            if (commonlength !== 0) {
+              if ((pointer - count_delete - count_insert) > 0 &&
+                  diffs[pointer - count_delete - count_insert - 1][0] ==
+                  DIFF_EQUAL) {
+                diffs[pointer - count_delete - count_insert - 1][1] +=
+                    text_insert.substring(0, commonlength);
+              } else {
+                diffs.splice(0, 0, [DIFF_EQUAL,
+                                    text_insert.substring(0, commonlength)]);
+                pointer++;
+              }
+              text_insert = text_insert.substring(commonlength);
+              text_delete = text_delete.substring(commonlength);
+            }
+            // Factor out any common suffixies.
+            commonlength = diff_commonSuffix(text_insert, text_delete);
+            if (commonlength !== 0) {
+              diffs[pointer][1] = text_insert.substring(text_insert.length -
+                  commonlength) + diffs[pointer][1];
+              text_insert = text_insert.substring(0, text_insert.length -
+                  commonlength);
+              text_delete = text_delete.substring(0, text_delete.length -
+                  commonlength);
+            }
+          }
+          // Delete the offending records and add the merged ones.
+          if (count_delete === 0) {
+            diffs.splice(pointer - count_insert,
+                count_delete + count_insert, [DIFF_INSERT, text_insert]);
+          } else if (count_insert === 0) {
+            diffs.splice(pointer - count_delete,
+                count_delete + count_insert, [DIFF_DELETE, text_delete]);
+          } else {
+            diffs.splice(pointer - count_delete - count_insert,
+                count_delete + count_insert, [DIFF_DELETE, text_delete],
+                [DIFF_INSERT, text_insert]);
+          }
+          pointer = pointer - count_delete - count_insert +
+                    (count_delete ? 1 : 0) + (count_insert ? 1 : 0) + 1;
+        } else if (pointer !== 0 && diffs[pointer - 1][0] == DIFF_EQUAL) {
+          // Merge this equality with the previous one.
+          diffs[pointer - 1][1] += diffs[pointer][1];
+          diffs.splice(pointer, 1);
+        } else {
+          pointer++;
+        }
+        count_insert = 0;
+        count_delete = 0;
+        text_delete = '';
+        text_insert = '';
+        break;
+    }
+  }
+  if (diffs[diffs.length - 1][1] === '') {
+    diffs.pop();  // Remove the dummy entry at the end.
+  }
+
+  // Second pass: look for single edits surrounded on both sides by equalities
+  // which can be shifted sideways to eliminate an equality.
+  // e.g: A<ins>BA</ins>C -> <ins>AB</ins>AC
+  var changes = false;
+  pointer = 1;
+  // Intentionally ignore the first and last element (don't need checking).
+  while (pointer < diffs.length - 1) {
+    if (diffs[pointer - 1][0] == DIFF_EQUAL &&
+        diffs[pointer + 1][0] == DIFF_EQUAL) {
+      // This is a single edit surrounded by equalities.
+      if (diffs[pointer][1].substring(diffs[pointer][1].length -
+          diffs[pointer - 1][1].length) == diffs[pointer - 1][1]) {
+        // Shift the edit over the previous equality.
+        diffs[pointer][1] = diffs[pointer - 1][1] +
+            diffs[pointer][1].substring(0, diffs[pointer][1].length -
+                                        diffs[pointer - 1][1].length);
+        diffs[pointer + 1][1] = diffs[pointer - 1][1] + diffs[pointer + 1][1];
+        diffs.splice(pointer - 1, 1);
+        changes = true;
+      } else if (diffs[pointer][1].substring(0, diffs[pointer + 1][1].length) ==
+          diffs[pointer + 1][1]) {
+        // Shift the edit over the next equality.
+        diffs[pointer - 1][1] += diffs[pointer + 1][1];
+        diffs[pointer][1] =
+            diffs[pointer][1].substring(diffs[pointer + 1][1].length) +
+            diffs[pointer + 1][1];
+        diffs.splice(pointer + 1, 1);
+        changes = true;
+      }
+    }
+    pointer++;
+  }
+  // If shifts were made, the diff needs reordering and another shift sweep.
+  if (changes) {
+    diff_cleanupMerge(diffs);
+  }
+};
+
+
+var diff = diff_main;
+diff.INSERT = DIFF_INSERT;
+diff.DELETE = DIFF_DELETE;
+diff.EQUAL = DIFF_EQUAL;
+
+module.exports = diff;
+
+/*
+ * Modify a diff such that the cursor position points to the start of a change:
+ * E.g.
+ *   cursor_normalize_diff([[DIFF_EQUAL, 'abc']], 1)
+ *     => [1, [[DIFF_EQUAL, 'a'], [DIFF_EQUAL, 'bc']]]
+ *   cursor_normalize_diff([[DIFF_INSERT, 'new'], [DIFF_DELETE, 'xyz']], 2)
+ *     => [2, [[DIFF_INSERT, 'new'], [DIFF_DELETE, 'xy'], [DIFF_DELETE, 'z']]]
+ *
+ * @param {Array} diffs Array of diff tuples
+ * @param {Int} cursor_pos Suggested edit position. Must not be out of bounds!
+ * @return {Array} A tuple [cursor location in the modified diff, modified diff]
+ */
+function cursor_normalize_diff (diffs, cursor_pos) {
+  if (cursor_pos === 0) {
+    return [DIFF_EQUAL, diffs];
+  }
+  for (var current_pos = 0, i = 0; i < diffs.length; i++) {
+    var d = diffs[i];
+    if (d[0] === DIFF_DELETE || d[0] === DIFF_EQUAL) {
+      var next_pos = current_pos + d[1].length;
+      if (cursor_pos === next_pos) {
+        return [i + 1, diffs];
+      } else if (cursor_pos < next_pos) {
+        // copy to prevent side effects
+        diffs = diffs.slice();
+        // split d into two diff changes
+        var split_pos = cursor_pos - current_pos;
+        var d_left = [d[0], d[1].slice(0, split_pos)];
+        var d_right = [d[0], d[1].slice(split_pos)];
+        diffs.splice(i, 1, d_left, d_right);
+        return [i + 1, diffs];
+      } else {
+        current_pos = next_pos;
+      }
+    }
+  }
+  throw new Error('cursor_pos is out of bounds!')
+}
+
+/*
+ * Modify a diff such that the edit position is "shifted" to the proposed edit location (cursor_position).
+ *
+ * Case 1)
+ *   Check if a naive shift is possible:
+ *     [0, X], [ 1, Y] -> [ 1, Y], [0, X]    (if X + Y === Y + X)
+ *     [0, X], [-1, Y] -> [-1, Y], [0, X]    (if X + Y === Y + X) - holds same result
+ * Case 2)
+ *   Check if the following shifts are possible:
+ *     [0, 'pre'], [ 1, 'prefix'] -> [ 1, 'pre'], [0, 'pre'], [ 1, 'fix']
+ *     [0, 'pre'], [-1, 'prefix'] -> [-1, 'pre'], [0, 'pre'], [-1, 'fix']
+ *         ^            ^
+ *         d          d_next
+ *
+ * @param {Array} diffs Array of diff tuples
+ * @param {Int} cursor_pos Suggested edit position. Must not be out of bounds!
+ * @return {Array} Array of diff tuples
+ */
+function fix_cursor (diffs, cursor_pos) {
+  var norm = cursor_normalize_diff(diffs, cursor_pos);
+  var ndiffs = norm[1];
+  var cursor_pointer = norm[0];
+  var d = ndiffs[cursor_pointer];
+  var d_next = ndiffs[cursor_pointer + 1];
+
+  if (d == null) {
+    // Text was deleted from end of original string,
+    // cursor is now out of bounds in new string
+    return diffs;
+  } else if (d[0] !== DIFF_EQUAL) {
+    // A modification happened at the cursor location.
+    // This is the expected outcome, so we can return the original diff.
+    return diffs;
+  } else {
+    if (d_next != null && d[1] + d_next[1] === d_next[1] + d[1]) {
+      // Case 1)
+      // It is possible to perform a naive shift
+      ndiffs.splice(cursor_pointer, 2, d_next, d)
+      return merge_tuples(ndiffs, cursor_pointer, 2)
+    } else if (d_next != null && d_next[1].indexOf(d[1]) === 0) {
+      // Case 2)
+      // d[1] is a prefix of d_next[1]
+      // We can assume that d_next[0] !== 0, since d[0] === 0
+      // Shift edit locations..
+      ndiffs.splice(cursor_pointer, 2, [d_next[0], d[1]], [0, d[1]]);
+      var suffix = d_next[1].slice(d[1].length);
+      if (suffix.length > 0) {
+        ndiffs.splice(cursor_pointer + 2, 0, [d_next[0], suffix]);
+      }
+      return merge_tuples(ndiffs, cursor_pointer, 3)
+    } else {
+      // Not possible to perform any modification
+      return diffs;
+    }
+  }
+
+}
+
+/*
+ * Try to merge tuples with their neigbors in a given range.
+ * E.g. [0, 'a'], [0, 'b'] -> [0, 'ab']
+ *
+ * @param {Array} diffs Array of diff tuples.
+ * @param {Int} start Position of the first element to merge (diffs[start] is also merged with diffs[start - 1]).
+ * @param {Int} length Number of consecutive elements to check.
+ * @return {Array} Array of merged diff tuples.
+ */
+function merge_tuples (diffs, start, length) {
+  // Check from (start-1) to (start+length).
+  for (var i = start + length - 1; i >= 0 && i >= start - 1; i--) {
+    if (i + 1 < diffs.length) {
+      var left_d = diffs[i];
+      var right_d = diffs[i+1];
+      if (left_d[0] === right_d[1]) {
+        diffs.splice(i, 2, [left_d[0], left_d[1] + right_d[1]]);
+      }
+    }
+  }
+  return diffs;
+}
+
+},{}],5:[function(require,module,exports){
+var parse = require('acorn').parse;
+
+/**
+ * Iterates through the AST nodes of the  given content string,
+ * replacing the source of each node with the return value of `callback`.
+ *
+ * @param content { String }
+ * @param callback { Function}
+ */
+module.exports = function reshift(content, callback) {
+  var ast = parse(content);
+
+  var chunks = content.split('');
+
+  (function walk(node, parent) {
+    node.parent = parent;
+    node.sources = [];
+
+    node.toString = function toString() {
+      return chunks.slice(this.start, this.end).join('');
+    };
+
+    for (var key in node) {
+      if (key == 'parent') {
+        continue;
+      }
+
+      var child = node[key];
+      if (child == null) {
+        continue;
+      }
+
+      if (typeof child != 'string' && typeof child.length != 'undefined') {
+        for (var i = 0; i < child.length; i++) {
+          if (child == null || typeof child[i].type != 'string') {
+            continue;
+          }
+
+          walk(child[i], node);
+        }
+      } else if (child && typeof child.type == 'string') {
+        walk(child, node);
+      }
+    }
+
+    var chunk = callback(node);
+    if (chunk) {
+      chunks[node.start] = chunk.toString();
+      for (var index = node.start + 1; index < node.end; index++) {
+        chunks[index] = '';
+      }
+    }
+  }(ast));
+
+  return {
+    code: chunks.join(''),
+    toString: function toString() {
+      return this.code;
+    },
+  };
+};
+
+},{"acorn":6}],6:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -3702,1579 +5303,4 @@ if (!root.hasAttribute('live')) {
   Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
-},{}],3:[function(require,module,exports){
-/**
- * This library modifies the diff-patch-match library by Neil Fraser
- * by removing the patch and match functionality and certain advanced
- * options in the diff function. The original license is as follows:
- *
- * ===
- *
- * Diff Match and Patch
- *
- * Copyright 2006 Google Inc.
- * http://code.google.com/p/google-diff-match-patch/
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-/**
- * The data structure representing a diff is an array of tuples:
- * [[DIFF_DELETE, 'Hello'], [DIFF_INSERT, 'Goodbye'], [DIFF_EQUAL, ' world.']]
- * which means: delete 'Hello', add 'Goodbye' and keep ' world.'
- */
-var DIFF_DELETE = -1;
-var DIFF_INSERT = 1;
-var DIFF_EQUAL = 0;
-
-
-/**
- * Find the differences between two texts.  Simplifies the problem by stripping
- * any common prefix or suffix off the texts before diffing.
- * @param {string} text1 Old string to be diffed.
- * @param {string} text2 New string to be diffed.
- * @param {Int} cursor_pos Expected edit position in text1 (optional)
- * @return {Array} Array of diff tuples.
- */
-function diff_main(text1, text2, cursor_pos) {
-  // Check for equality (speedup).
-  if (text1 == text2) {
-    if (text1) {
-      return [[DIFF_EQUAL, text1]];
-    }
-    return [];
-  }
-
-  // Check cursor_pos within bounds
-  if (cursor_pos < 0 || text1.length < cursor_pos) {
-    cursor_pos = null;
-  }
-
-  // Trim off common prefix (speedup).
-  var commonlength = diff_commonPrefix(text1, text2);
-  var commonprefix = text1.substring(0, commonlength);
-  text1 = text1.substring(commonlength);
-  text2 = text2.substring(commonlength);
-
-  // Trim off common suffix (speedup).
-  commonlength = diff_commonSuffix(text1, text2);
-  var commonsuffix = text1.substring(text1.length - commonlength);
-  text1 = text1.substring(0, text1.length - commonlength);
-  text2 = text2.substring(0, text2.length - commonlength);
-
-  // Compute the diff on the middle block.
-  var diffs = diff_compute_(text1, text2);
-
-  // Restore the prefix and suffix.
-  if (commonprefix) {
-    diffs.unshift([DIFF_EQUAL, commonprefix]);
-  }
-  if (commonsuffix) {
-    diffs.push([DIFF_EQUAL, commonsuffix]);
-  }
-  diff_cleanupMerge(diffs);
-  if (cursor_pos != null) {
-    diffs = fix_cursor(diffs, cursor_pos);
-  }
-  return diffs;
-};
-
-
-/**
- * Find the differences between two texts.  Assumes that the texts do not
- * have any common prefix or suffix.
- * @param {string} text1 Old string to be diffed.
- * @param {string} text2 New string to be diffed.
- * @return {Array} Array of diff tuples.
- */
-function diff_compute_(text1, text2) {
-  var diffs;
-
-  if (!text1) {
-    // Just add some text (speedup).
-    return [[DIFF_INSERT, text2]];
-  }
-
-  if (!text2) {
-    // Just delete some text (speedup).
-    return [[DIFF_DELETE, text1]];
-  }
-
-  var longtext = text1.length > text2.length ? text1 : text2;
-  var shorttext = text1.length > text2.length ? text2 : text1;
-  var i = longtext.indexOf(shorttext);
-  if (i != -1) {
-    // Shorter text is inside the longer text (speedup).
-    diffs = [[DIFF_INSERT, longtext.substring(0, i)],
-             [DIFF_EQUAL, shorttext],
-             [DIFF_INSERT, longtext.substring(i + shorttext.length)]];
-    // Swap insertions for deletions if diff is reversed.
-    if (text1.length > text2.length) {
-      diffs[0][0] = diffs[2][0] = DIFF_DELETE;
-    }
-    return diffs;
-  }
-
-  if (shorttext.length == 1) {
-    // Single character string.
-    // After the previous speedup, the character can't be an equality.
-    return [[DIFF_DELETE, text1], [DIFF_INSERT, text2]];
-  }
-
-  // Check to see if the problem can be split in two.
-  var hm = diff_halfMatch_(text1, text2);
-  if (hm) {
-    // A half-match was found, sort out the return data.
-    var text1_a = hm[0];
-    var text1_b = hm[1];
-    var text2_a = hm[2];
-    var text2_b = hm[3];
-    var mid_common = hm[4];
-    // Send both pairs off for separate processing.
-    var diffs_a = diff_main(text1_a, text2_a);
-    var diffs_b = diff_main(text1_b, text2_b);
-    // Merge the results.
-    return diffs_a.concat([[DIFF_EQUAL, mid_common]], diffs_b);
-  }
-
-  return diff_bisect_(text1, text2);
-};
-
-
-/**
- * Find the 'middle snake' of a diff, split the problem in two
- * and return the recursively constructed diff.
- * See Myers 1986 paper: An O(ND) Difference Algorithm and Its Variations.
- * @param {string} text1 Old string to be diffed.
- * @param {string} text2 New string to be diffed.
- * @return {Array} Array of diff tuples.
- * @private
- */
-function diff_bisect_(text1, text2) {
-  // Cache the text lengths to prevent multiple calls.
-  var text1_length = text1.length;
-  var text2_length = text2.length;
-  var max_d = Math.ceil((text1_length + text2_length) / 2);
-  var v_offset = max_d;
-  var v_length = 2 * max_d;
-  var v1 = new Array(v_length);
-  var v2 = new Array(v_length);
-  // Setting all elements to -1 is faster in Chrome & Firefox than mixing
-  // integers and undefined.
-  for (var x = 0; x < v_length; x++) {
-    v1[x] = -1;
-    v2[x] = -1;
-  }
-  v1[v_offset + 1] = 0;
-  v2[v_offset + 1] = 0;
-  var delta = text1_length - text2_length;
-  // If the total number of characters is odd, then the front path will collide
-  // with the reverse path.
-  var front = (delta % 2 != 0);
-  // Offsets for start and end of k loop.
-  // Prevents mapping of space beyond the grid.
-  var k1start = 0;
-  var k1end = 0;
-  var k2start = 0;
-  var k2end = 0;
-  for (var d = 0; d < max_d; d++) {
-    // Walk the front path one step.
-    for (var k1 = -d + k1start; k1 <= d - k1end; k1 += 2) {
-      var k1_offset = v_offset + k1;
-      var x1;
-      if (k1 == -d || (k1 != d && v1[k1_offset - 1] < v1[k1_offset + 1])) {
-        x1 = v1[k1_offset + 1];
-      } else {
-        x1 = v1[k1_offset - 1] + 1;
-      }
-      var y1 = x1 - k1;
-      while (x1 < text1_length && y1 < text2_length &&
-             text1.charAt(x1) == text2.charAt(y1)) {
-        x1++;
-        y1++;
-      }
-      v1[k1_offset] = x1;
-      if (x1 > text1_length) {
-        // Ran off the right of the graph.
-        k1end += 2;
-      } else if (y1 > text2_length) {
-        // Ran off the bottom of the graph.
-        k1start += 2;
-      } else if (front) {
-        var k2_offset = v_offset + delta - k1;
-        if (k2_offset >= 0 && k2_offset < v_length && v2[k2_offset] != -1) {
-          // Mirror x2 onto top-left coordinate system.
-          var x2 = text1_length - v2[k2_offset];
-          if (x1 >= x2) {
-            // Overlap detected.
-            return diff_bisectSplit_(text1, text2, x1, y1);
-          }
-        }
-      }
-    }
-
-    // Walk the reverse path one step.
-    for (var k2 = -d + k2start; k2 <= d - k2end; k2 += 2) {
-      var k2_offset = v_offset + k2;
-      var x2;
-      if (k2 == -d || (k2 != d && v2[k2_offset - 1] < v2[k2_offset + 1])) {
-        x2 = v2[k2_offset + 1];
-      } else {
-        x2 = v2[k2_offset - 1] + 1;
-      }
-      var y2 = x2 - k2;
-      while (x2 < text1_length && y2 < text2_length &&
-             text1.charAt(text1_length - x2 - 1) ==
-             text2.charAt(text2_length - y2 - 1)) {
-        x2++;
-        y2++;
-      }
-      v2[k2_offset] = x2;
-      if (x2 > text1_length) {
-        // Ran off the left of the graph.
-        k2end += 2;
-      } else if (y2 > text2_length) {
-        // Ran off the top of the graph.
-        k2start += 2;
-      } else if (!front) {
-        var k1_offset = v_offset + delta - k2;
-        if (k1_offset >= 0 && k1_offset < v_length && v1[k1_offset] != -1) {
-          var x1 = v1[k1_offset];
-          var y1 = v_offset + x1 - k1_offset;
-          // Mirror x2 onto top-left coordinate system.
-          x2 = text1_length - x2;
-          if (x1 >= x2) {
-            // Overlap detected.
-            return diff_bisectSplit_(text1, text2, x1, y1);
-          }
-        }
-      }
-    }
-  }
-  // Diff took too long and hit the deadline or
-  // number of diffs equals number of characters, no commonality at all.
-  return [[DIFF_DELETE, text1], [DIFF_INSERT, text2]];
-};
-
-
-/**
- * Given the location of the 'middle snake', split the diff in two parts
- * and recurse.
- * @param {string} text1 Old string to be diffed.
- * @param {string} text2 New string to be diffed.
- * @param {number} x Index of split point in text1.
- * @param {number} y Index of split point in text2.
- * @return {Array} Array of diff tuples.
- */
-function diff_bisectSplit_(text1, text2, x, y) {
-  var text1a = text1.substring(0, x);
-  var text2a = text2.substring(0, y);
-  var text1b = text1.substring(x);
-  var text2b = text2.substring(y);
-
-  // Compute both diffs serially.
-  var diffs = diff_main(text1a, text2a);
-  var diffsb = diff_main(text1b, text2b);
-
-  return diffs.concat(diffsb);
-};
-
-
-/**
- * Determine the common prefix of two strings.
- * @param {string} text1 First string.
- * @param {string} text2 Second string.
- * @return {number} The number of characters common to the start of each
- *     string.
- */
-function diff_commonPrefix(text1, text2) {
-  // Quick check for common null cases.
-  if (!text1 || !text2 || text1.charAt(0) != text2.charAt(0)) {
-    return 0;
-  }
-  // Binary search.
-  // Performance analysis: http://neil.fraser.name/news/2007/10/09/
-  var pointermin = 0;
-  var pointermax = Math.min(text1.length, text2.length);
-  var pointermid = pointermax;
-  var pointerstart = 0;
-  while (pointermin < pointermid) {
-    if (text1.substring(pointerstart, pointermid) ==
-        text2.substring(pointerstart, pointermid)) {
-      pointermin = pointermid;
-      pointerstart = pointermin;
-    } else {
-      pointermax = pointermid;
-    }
-    pointermid = Math.floor((pointermax - pointermin) / 2 + pointermin);
-  }
-  return pointermid;
-};
-
-
-/**
- * Determine the common suffix of two strings.
- * @param {string} text1 First string.
- * @param {string} text2 Second string.
- * @return {number} The number of characters common to the end of each string.
- */
-function diff_commonSuffix(text1, text2) {
-  // Quick check for common null cases.
-  if (!text1 || !text2 ||
-      text1.charAt(text1.length - 1) != text2.charAt(text2.length - 1)) {
-    return 0;
-  }
-  // Binary search.
-  // Performance analysis: http://neil.fraser.name/news/2007/10/09/
-  var pointermin = 0;
-  var pointermax = Math.min(text1.length, text2.length);
-  var pointermid = pointermax;
-  var pointerend = 0;
-  while (pointermin < pointermid) {
-    if (text1.substring(text1.length - pointermid, text1.length - pointerend) ==
-        text2.substring(text2.length - pointermid, text2.length - pointerend)) {
-      pointermin = pointermid;
-      pointerend = pointermin;
-    } else {
-      pointermax = pointermid;
-    }
-    pointermid = Math.floor((pointermax - pointermin) / 2 + pointermin);
-  }
-  return pointermid;
-};
-
-
-/**
- * Do the two texts share a substring which is at least half the length of the
- * longer text?
- * This speedup can produce non-minimal diffs.
- * @param {string} text1 First string.
- * @param {string} text2 Second string.
- * @return {Array.<string>} Five element Array, containing the prefix of
- *     text1, the suffix of text1, the prefix of text2, the suffix of
- *     text2 and the common middle.  Or null if there was no match.
- */
-function diff_halfMatch_(text1, text2) {
-  var longtext = text1.length > text2.length ? text1 : text2;
-  var shorttext = text1.length > text2.length ? text2 : text1;
-  if (longtext.length < 4 || shorttext.length * 2 < longtext.length) {
-    return null;  // Pointless.
-  }
-
-  /**
-   * Does a substring of shorttext exist within longtext such that the substring
-   * is at least half the length of longtext?
-   * Closure, but does not reference any external variables.
-   * @param {string} longtext Longer string.
-   * @param {string} shorttext Shorter string.
-   * @param {number} i Start index of quarter length substring within longtext.
-   * @return {Array.<string>} Five element Array, containing the prefix of
-   *     longtext, the suffix of longtext, the prefix of shorttext, the suffix
-   *     of shorttext and the common middle.  Or null if there was no match.
-   * @private
-   */
-  function diff_halfMatchI_(longtext, shorttext, i) {
-    // Start with a 1/4 length substring at position i as a seed.
-    var seed = longtext.substring(i, i + Math.floor(longtext.length / 4));
-    var j = -1;
-    var best_common = '';
-    var best_longtext_a, best_longtext_b, best_shorttext_a, best_shorttext_b;
-    while ((j = shorttext.indexOf(seed, j + 1)) != -1) {
-      var prefixLength = diff_commonPrefix(longtext.substring(i),
-                                           shorttext.substring(j));
-      var suffixLength = diff_commonSuffix(longtext.substring(0, i),
-                                           shorttext.substring(0, j));
-      if (best_common.length < suffixLength + prefixLength) {
-        best_common = shorttext.substring(j - suffixLength, j) +
-            shorttext.substring(j, j + prefixLength);
-        best_longtext_a = longtext.substring(0, i - suffixLength);
-        best_longtext_b = longtext.substring(i + prefixLength);
-        best_shorttext_a = shorttext.substring(0, j - suffixLength);
-        best_shorttext_b = shorttext.substring(j + prefixLength);
-      }
-    }
-    if (best_common.length * 2 >= longtext.length) {
-      return [best_longtext_a, best_longtext_b,
-              best_shorttext_a, best_shorttext_b, best_common];
-    } else {
-      return null;
-    }
-  }
-
-  // First check if the second quarter is the seed for a half-match.
-  var hm1 = diff_halfMatchI_(longtext, shorttext,
-                             Math.ceil(longtext.length / 4));
-  // Check again based on the third quarter.
-  var hm2 = diff_halfMatchI_(longtext, shorttext,
-                             Math.ceil(longtext.length / 2));
-  var hm;
-  if (!hm1 && !hm2) {
-    return null;
-  } else if (!hm2) {
-    hm = hm1;
-  } else if (!hm1) {
-    hm = hm2;
-  } else {
-    // Both matched.  Select the longest.
-    hm = hm1[4].length > hm2[4].length ? hm1 : hm2;
-  }
-
-  // A half-match was found, sort out the return data.
-  var text1_a, text1_b, text2_a, text2_b;
-  if (text1.length > text2.length) {
-    text1_a = hm[0];
-    text1_b = hm[1];
-    text2_a = hm[2];
-    text2_b = hm[3];
-  } else {
-    text2_a = hm[0];
-    text2_b = hm[1];
-    text1_a = hm[2];
-    text1_b = hm[3];
-  }
-  var mid_common = hm[4];
-  return [text1_a, text1_b, text2_a, text2_b, mid_common];
-};
-
-
-/**
- * Reorder and merge like edit sections.  Merge equalities.
- * Any edit section can move as long as it doesn't cross an equality.
- * @param {Array} diffs Array of diff tuples.
- */
-function diff_cleanupMerge(diffs) {
-  diffs.push([DIFF_EQUAL, '']);  // Add a dummy entry at the end.
-  var pointer = 0;
-  var count_delete = 0;
-  var count_insert = 0;
-  var text_delete = '';
-  var text_insert = '';
-  var commonlength;
-  while (pointer < diffs.length) {
-    switch (diffs[pointer][0]) {
-      case DIFF_INSERT:
-        count_insert++;
-        text_insert += diffs[pointer][1];
-        pointer++;
-        break;
-      case DIFF_DELETE:
-        count_delete++;
-        text_delete += diffs[pointer][1];
-        pointer++;
-        break;
-      case DIFF_EQUAL:
-        // Upon reaching an equality, check for prior redundancies.
-        if (count_delete + count_insert > 1) {
-          if (count_delete !== 0 && count_insert !== 0) {
-            // Factor out any common prefixies.
-            commonlength = diff_commonPrefix(text_insert, text_delete);
-            if (commonlength !== 0) {
-              if ((pointer - count_delete - count_insert) > 0 &&
-                  diffs[pointer - count_delete - count_insert - 1][0] ==
-                  DIFF_EQUAL) {
-                diffs[pointer - count_delete - count_insert - 1][1] +=
-                    text_insert.substring(0, commonlength);
-              } else {
-                diffs.splice(0, 0, [DIFF_EQUAL,
-                                    text_insert.substring(0, commonlength)]);
-                pointer++;
-              }
-              text_insert = text_insert.substring(commonlength);
-              text_delete = text_delete.substring(commonlength);
-            }
-            // Factor out any common suffixies.
-            commonlength = diff_commonSuffix(text_insert, text_delete);
-            if (commonlength !== 0) {
-              diffs[pointer][1] = text_insert.substring(text_insert.length -
-                  commonlength) + diffs[pointer][1];
-              text_insert = text_insert.substring(0, text_insert.length -
-                  commonlength);
-              text_delete = text_delete.substring(0, text_delete.length -
-                  commonlength);
-            }
-          }
-          // Delete the offending records and add the merged ones.
-          if (count_delete === 0) {
-            diffs.splice(pointer - count_insert,
-                count_delete + count_insert, [DIFF_INSERT, text_insert]);
-          } else if (count_insert === 0) {
-            diffs.splice(pointer - count_delete,
-                count_delete + count_insert, [DIFF_DELETE, text_delete]);
-          } else {
-            diffs.splice(pointer - count_delete - count_insert,
-                count_delete + count_insert, [DIFF_DELETE, text_delete],
-                [DIFF_INSERT, text_insert]);
-          }
-          pointer = pointer - count_delete - count_insert +
-                    (count_delete ? 1 : 0) + (count_insert ? 1 : 0) + 1;
-        } else if (pointer !== 0 && diffs[pointer - 1][0] == DIFF_EQUAL) {
-          // Merge this equality with the previous one.
-          diffs[pointer - 1][1] += diffs[pointer][1];
-          diffs.splice(pointer, 1);
-        } else {
-          pointer++;
-        }
-        count_insert = 0;
-        count_delete = 0;
-        text_delete = '';
-        text_insert = '';
-        break;
-    }
-  }
-  if (diffs[diffs.length - 1][1] === '') {
-    diffs.pop();  // Remove the dummy entry at the end.
-  }
-
-  // Second pass: look for single edits surrounded on both sides by equalities
-  // which can be shifted sideways to eliminate an equality.
-  // e.g: A<ins>BA</ins>C -> <ins>AB</ins>AC
-  var changes = false;
-  pointer = 1;
-  // Intentionally ignore the first and last element (don't need checking).
-  while (pointer < diffs.length - 1) {
-    if (diffs[pointer - 1][0] == DIFF_EQUAL &&
-        diffs[pointer + 1][0] == DIFF_EQUAL) {
-      // This is a single edit surrounded by equalities.
-      if (diffs[pointer][1].substring(diffs[pointer][1].length -
-          diffs[pointer - 1][1].length) == diffs[pointer - 1][1]) {
-        // Shift the edit over the previous equality.
-        diffs[pointer][1] = diffs[pointer - 1][1] +
-            diffs[pointer][1].substring(0, diffs[pointer][1].length -
-                                        diffs[pointer - 1][1].length);
-        diffs[pointer + 1][1] = diffs[pointer - 1][1] + diffs[pointer + 1][1];
-        diffs.splice(pointer - 1, 1);
-        changes = true;
-      } else if (diffs[pointer][1].substring(0, diffs[pointer + 1][1].length) ==
-          diffs[pointer + 1][1]) {
-        // Shift the edit over the next equality.
-        diffs[pointer - 1][1] += diffs[pointer + 1][1];
-        diffs[pointer][1] =
-            diffs[pointer][1].substring(diffs[pointer + 1][1].length) +
-            diffs[pointer + 1][1];
-        diffs.splice(pointer + 1, 1);
-        changes = true;
-      }
-    }
-    pointer++;
-  }
-  // If shifts were made, the diff needs reordering and another shift sweep.
-  if (changes) {
-    diff_cleanupMerge(diffs);
-  }
-};
-
-
-var diff = diff_main;
-diff.INSERT = DIFF_INSERT;
-diff.DELETE = DIFF_DELETE;
-diff.EQUAL = DIFF_EQUAL;
-
-module.exports = diff;
-
-/*
- * Modify a diff such that the cursor position points to the start of a change:
- * E.g.
- *   cursor_normalize_diff([[DIFF_EQUAL, 'abc']], 1)
- *     => [1, [[DIFF_EQUAL, 'a'], [DIFF_EQUAL, 'bc']]]
- *   cursor_normalize_diff([[DIFF_INSERT, 'new'], [DIFF_DELETE, 'xyz']], 2)
- *     => [2, [[DIFF_INSERT, 'new'], [DIFF_DELETE, 'xy'], [DIFF_DELETE, 'z']]]
- *
- * @param {Array} diffs Array of diff tuples
- * @param {Int} cursor_pos Suggested edit position. Must not be out of bounds!
- * @return {Array} A tuple [cursor location in the modified diff, modified diff]
- */
-function cursor_normalize_diff (diffs, cursor_pos) {
-  if (cursor_pos === 0) {
-    return [DIFF_EQUAL, diffs];
-  }
-  for (var current_pos = 0, i = 0; i < diffs.length; i++) {
-    var d = diffs[i];
-    if (d[0] === DIFF_DELETE || d[0] === DIFF_EQUAL) {
-      var next_pos = current_pos + d[1].length;
-      if (cursor_pos === next_pos) {
-        return [i + 1, diffs];
-      } else if (cursor_pos < next_pos) {
-        // copy to prevent side effects
-        diffs = diffs.slice();
-        // split d into two diff changes
-        var split_pos = cursor_pos - current_pos;
-        var d_left = [d[0], d[1].slice(0, split_pos)];
-        var d_right = [d[0], d[1].slice(split_pos)];
-        diffs.splice(i, 1, d_left, d_right);
-        return [i + 1, diffs];
-      } else {
-        current_pos = next_pos;
-      }
-    }
-  }
-  throw new Error('cursor_pos is out of bounds!')
-}
-
-/*
- * Modify a diff such that the edit position is "shifted" to the proposed edit location (cursor_position).
- *
- * Case 1)
- *   Check if a naive shift is possible:
- *     [0, X], [ 1, Y] -> [ 1, Y], [0, X]    (if X + Y === Y + X)
- *     [0, X], [-1, Y] -> [-1, Y], [0, X]    (if X + Y === Y + X) - holds same result
- * Case 2)
- *   Check if the following shifts are possible:
- *     [0, 'pre'], [ 1, 'prefix'] -> [ 1, 'pre'], [0, 'pre'], [ 1, 'fix']
- *     [0, 'pre'], [-1, 'prefix'] -> [-1, 'pre'], [0, 'pre'], [-1, 'fix']
- *         ^            ^
- *         d          d_next
- *
- * @param {Array} diffs Array of diff tuples
- * @param {Int} cursor_pos Suggested edit position. Must not be out of bounds!
- * @return {Array} Array of diff tuples
- */
-function fix_cursor (diffs, cursor_pos) {
-  var norm = cursor_normalize_diff(diffs, cursor_pos);
-  var ndiffs = norm[1];
-  var cursor_pointer = norm[0];
-  var d = ndiffs[cursor_pointer];
-  var d_next = ndiffs[cursor_pointer + 1];
-
-  if (d == null) {
-    // Text was deleted from end of original string,
-    // cursor is now out of bounds in new string
-    return diffs;
-  } else if (d[0] !== DIFF_EQUAL) {
-    // A modification happened at the cursor location.
-    // This is the expected outcome, so we can return the original diff.
-    return diffs;
-  } else {
-    if (d_next != null && d[1] + d_next[1] === d_next[1] + d[1]) {
-      // Case 1)
-      // It is possible to perform a naive shift
-      ndiffs.splice(cursor_pointer, 2, d_next, d)
-      return merge_tuples(ndiffs, cursor_pointer, 2)
-    } else if (d_next != null && d_next[1].indexOf(d[1]) === 0) {
-      // Case 2)
-      // d[1] is a prefix of d_next[1]
-      // We can assume that d_next[0] !== 0, since d[0] === 0
-      // Shift edit locations..
-      ndiffs.splice(cursor_pointer, 2, [d_next[0], d[1]], [0, d[1]]);
-      var suffix = d_next[1].slice(d[1].length);
-      if (suffix.length > 0) {
-        ndiffs.splice(cursor_pointer + 2, 0, [d_next[0], suffix]);
-      }
-      return merge_tuples(ndiffs, cursor_pointer, 3)
-    } else {
-      // Not possible to perform any modification
-      return diffs;
-    }
-  }
-
-}
-
-/*
- * Try to merge tuples with their neigbors in a given range.
- * E.g. [0, 'a'], [0, 'b'] -> [0, 'ab']
- *
- * @param {Array} diffs Array of diff tuples.
- * @param {Int} start Position of the first element to merge (diffs[start] is also merged with diffs[start - 1]).
- * @param {Int} length Number of consecutive elements to check.
- * @return {Array} Array of merged diff tuples.
- */
-function merge_tuples (diffs, start, length) {
-  // Check from (start-1) to (start+length).
-  for (var i = start + length - 1; i >= 0 && i >= start - 1; i--) {
-    if (i + 1 < diffs.length) {
-      var left_d = diffs[i];
-      var right_d = diffs[i+1];
-      if (left_d[0] === right_d[1]) {
-        diffs.splice(i, 2, [left_d[0], left_d[1] + right_d[1]]);
-      }
-    }
-  }
-  return diffs;
-}
-
-},{}],4:[function(require,module,exports){
-'use strict';
-// Create a range object for efficently rendering strings to elements.
-var range;
-
-var doc = typeof document !== 'undefined' && document;
-
-var testEl = doc ?
-    doc.body || doc.createElement('div') :
-    {};
-
-var NS_XHTML = 'http://www.w3.org/1999/xhtml';
-
-var ELEMENT_NODE = 1;
-var TEXT_NODE = 3;
-var COMMENT_NODE = 8;
-
-// Fixes <https://github.com/patrick-steele-idem/morphdom/issues/32>
-// (IE7+ support) <=IE7 does not support el.hasAttribute(name)
-var hasAttributeNS;
-
-if (testEl.hasAttributeNS) {
-    hasAttributeNS = function(el, namespaceURI, name) {
-        return el.hasAttributeNS(namespaceURI, name);
-    };
-} else if (testEl.hasAttribute) {
-    hasAttributeNS = function(el, namespaceURI, name) {
-        return el.hasAttribute(name);
-    };
-} else {
-    hasAttributeNS = function(el, namespaceURI, name) {
-        return !!el.getAttributeNode(name);
-    };
-}
-
-function toElement(str) {
-    if (!range && doc.createRange) {
-        range = doc.createRange();
-        range.selectNode(doc.body);
-    }
-
-    var fragment;
-    if (range && range.createContextualFragment) {
-        fragment = range.createContextualFragment(str);
-    } else {
-        fragment = doc.createElement('body');
-        fragment.innerHTML = str;
-    }
-    return fragment.childNodes[0];
-}
-
-function syncBooleanAttrProp(fromEl, toEl, name) {
-    if (fromEl[name] !== toEl[name]) {
-        fromEl[name] = toEl[name];
-        if (fromEl[name]) {
-            fromEl.setAttribute(name, '');
-        } else {
-            fromEl.removeAttribute(name, '');
-        }
-    }
-}
-
-var specialElHandlers = {
-    /**
-     * Needed for IE. Apparently IE doesn't think that "selected" is an
-     * attribute when reading over the attributes using selectEl.attributes
-     */
-    OPTION: function(fromEl, toEl) {
-        syncBooleanAttrProp(fromEl, toEl, 'selected');
-    },
-    /**
-     * The "value" attribute is special for the <input> element since it sets
-     * the initial value. Changing the "value" attribute without changing the
-     * "value" property will have no effect since it is only used to the set the
-     * initial value.  Similar for the "checked" attribute, and "disabled".
-     */
-    INPUT: function(fromEl, toEl) {
-        syncBooleanAttrProp(fromEl, toEl, 'checked');
-        syncBooleanAttrProp(fromEl, toEl, 'disabled');
-
-        if (fromEl.value !== toEl.value) {
-            fromEl.value = toEl.value;
-        }
-
-        if (!hasAttributeNS(toEl, null, 'value')) {
-            fromEl.removeAttribute('value');
-        }
-    },
-
-    TEXTAREA: function(fromEl, toEl) {
-        var newValue = toEl.value;
-        if (fromEl.value !== newValue) {
-            fromEl.value = newValue;
-        }
-
-        if (fromEl.firstChild) {
-            // Needed for IE. Apparently IE sets the placeholder as the
-            // node value and vise versa. This ignores an empty update.
-            if (newValue === '' && fromEl.firstChild.nodeValue === fromEl.placeholder) {
-                return;
-            }
-
-            fromEl.firstChild.nodeValue = newValue;
-        }
-    }
-};
-
-function noop() {}
-
-/**
- * Returns true if two node's names are the same.
- *
- * NOTE: We don't bother checking `namespaceURI` because you will never find two HTML elements with the same
- *       nodeName and different namespace URIs.
- *
- * @param {Element} a
- * @param {Element} b The target element
- * @return {boolean}
- */
-function compareNodeNames(fromEl, toEl) {
-    var fromNodeName = fromEl.nodeName;
-    var toNodeName = toEl.nodeName;
-
-    if (fromNodeName === toNodeName) {
-        return true;
-    }
-
-    if (toEl.actualize &&
-        fromNodeName.charCodeAt(0) < 91 && /* from tag name is upper case */
-        toNodeName.charCodeAt(0) > 90 /* target tag name is lower case */) {
-        // If the target element is a virtual DOM node then we may need to normalize the tag name
-        // before comparing. Normal HTML elements that are in the "http://www.w3.org/1999/xhtml"
-        // are converted to upper case
-        return fromNodeName === toNodeName.toUpperCase();
-    } else {
-        return false;
-    }
-}
-
-/**
- * Create an element, optionally with a known namespace URI.
- *
- * @param {string} name the element name, e.g. 'div' or 'svg'
- * @param {string} [namespaceURI] the element's namespace URI, i.e. the value of
- * its `xmlns` attribute or its inferred namespace.
- *
- * @return {Element}
- */
-function createElementNS(name, namespaceURI) {
-    return !namespaceURI || namespaceURI === NS_XHTML ?
-        doc.createElement(name) :
-        doc.createElementNS(namespaceURI, name);
-}
-
-/**
- * Loop over all of the attributes on the target node and make sure the original
- * DOM node has the same attributes. If an attribute found on the original node
- * is not on the new node then remove it from the original node.
- *
- * @param  {Element} fromNode
- * @param  {Element} toNode
- */
-function morphAttrs(fromNode, toNode) {
-    if (toNode.assignAttributes) {
-        toNode.assignAttributes(fromNode);
-    } else {
-        var attrs = toNode.attributes;
-        var i;
-        var attr;
-        var attrName;
-        var attrNamespaceURI;
-        var attrValue;
-        var fromValue;
-
-        for (i = attrs.length - 1; i >= 0; --i) {
-            attr = attrs[i];
-            attrName = attr.name;
-            attrNamespaceURI = attr.namespaceURI;
-            attrValue = attr.value;
-
-            if (attrNamespaceURI) {
-                attrName = attr.localName || attrName;
-                fromValue = fromNode.getAttributeNS(attrNamespaceURI, attrName);
-
-                if (fromValue !== attrValue) {
-                    fromNode.setAttributeNS(attrNamespaceURI, attrName, attrValue);
-                }
-            } else {
-                fromValue = fromNode.getAttribute(attrName);
-
-                if (fromValue !== attrValue) {
-                    fromNode.setAttribute(attrName, attrValue);
-                }
-            }
-        }
-
-        // Remove any extra attributes found on the original DOM element that
-        // weren't found on the target element.
-        attrs = fromNode.attributes;
-
-        for (i = attrs.length - 1; i >= 0; --i) {
-            attr = attrs[i];
-            if (attr.specified !== false) {
-                attrName = attr.name;
-                attrNamespaceURI = attr.namespaceURI;
-
-                if (attrNamespaceURI) {
-                    attrName = attr.localName || attrName;
-
-                    if (!hasAttributeNS(toNode, attrNamespaceURI, attrName)) {
-                        fromNode.removeAttributeNS(attrNamespaceURI, attrName);
-                    }
-                } else {
-                    if (!hasAttributeNS(toNode, null, attrName)) {
-                        fromNode.removeAttribute(attrName);
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Copies the children of one DOM element to another DOM element
- */
-function moveChildren(fromEl, toEl) {
-    var curChild = fromEl.firstChild;
-    while (curChild) {
-        var nextChild = curChild.nextSibling;
-        toEl.appendChild(curChild);
-        curChild = nextChild;
-    }
-    return toEl;
-}
-
-function defaultGetNodeKey(node) {
-    return node.id;
-}
-
-function morphdom(fromNode, toNode, options) {
-    if (!options) {
-        options = {};
-    }
-
-    if (typeof toNode === 'string') {
-        if (fromNode.nodeName === '#document' || fromNode.nodeName === 'HTML') {
-            var toNodeHtml = toNode;
-            toNode = doc.createElement('html');
-            toNode.innerHTML = toNodeHtml;
-        } else {
-            toNode = toElement(toNode);
-        }
-    }
-
-    var getNodeKey = options.getNodeKey || defaultGetNodeKey;
-    var onBeforeNodeAdded = options.onBeforeNodeAdded || noop;
-    var onNodeAdded = options.onNodeAdded || noop;
-    var onBeforeElUpdated = options.onBeforeElUpdated || noop;
-    var onElUpdated = options.onElUpdated || noop;
-    var onBeforeNodeDiscarded = options.onBeforeNodeDiscarded || noop;
-    var onNodeDiscarded = options.onNodeDiscarded || noop;
-    var onBeforeElChildrenUpdated = options.onBeforeElChildrenUpdated || noop;
-    var childrenOnly = options.childrenOnly === true;
-
-    // This object is used as a lookup to quickly find all keyed elements in the original DOM tree.
-    var fromNodesLookup = {};
-    var keyedRemovalList;
-
-    function addKeyedRemoval(key) {
-        if (keyedRemovalList) {
-            keyedRemovalList.push(key);
-        } else {
-            keyedRemovalList = [key];
-        }
-    }
-
-    function walkDiscardedChildNodes(node, skipKeyedNodes) {
-        if (node.nodeType === ELEMENT_NODE) {
-            var curChild = node.firstChild;
-            while (curChild) {
-
-                var key = undefined;
-
-                if (skipKeyedNodes && (key = getNodeKey(curChild))) {
-                    // If we are skipping keyed nodes then we add the key
-                    // to a list so that it can be handled at the very end.
-                    addKeyedRemoval(key);
-                } else {
-                    // Only report the node as discarded if it is not keyed. We do this because
-                    // at the end we loop through all keyed elements that were unmatched
-                    // and then discard them in one final pass.
-                    onNodeDiscarded(curChild);
-                    if (curChild.firstChild) {
-                        walkDiscardedChildNodes(curChild, skipKeyedNodes);
-                    }
-                }
-
-                curChild = curChild.nextSibling;
-            }
-        }
-    }
-
-    /**
-     * Removes a DOM node out of the original DOM
-     *
-     * @param  {Node} node The node to remove
-     * @param  {Node} parentNode The nodes parent
-     * @param  {Boolean} skipKeyedNodes If true then elements with keys will be skipped and not discarded.
-     * @return {undefined}
-     */
-    function removeNode(node, parentNode, skipKeyedNodes) {
-        if (onBeforeNodeDiscarded(node) === false) {
-            return;
-        }
-
-        if (parentNode) {
-            parentNode.removeChild(node);
-        }
-
-        onNodeDiscarded(node);
-        walkDiscardedChildNodes(node, skipKeyedNodes);
-    }
-
-    // // TreeWalker implementation is no faster, but keeping this around in case this changes in the future
-    // function indexTree(root) {
-    //     var treeWalker = document.createTreeWalker(
-    //         root,
-    //         NodeFilter.SHOW_ELEMENT);
-    //
-    //     var el;
-    //     while((el = treeWalker.nextNode())) {
-    //         var key = getNodeKey(el);
-    //         if (key) {
-    //             fromNodesLookup[key] = el;
-    //         }
-    //     }
-    // }
-
-    // // NodeIterator implementation is no faster, but keeping this around in case this changes in the future
-    //
-    // function indexTree(node) {
-    //     var nodeIterator = document.createNodeIterator(node, NodeFilter.SHOW_ELEMENT);
-    //     var el;
-    //     while((el = nodeIterator.nextNode())) {
-    //         var key = getNodeKey(el);
-    //         if (key) {
-    //             fromNodesLookup[key] = el;
-    //         }
-    //     }
-    // }
-
-    function indexTree(node) {
-        if (node.nodeType === ELEMENT_NODE) {
-            var curChild = node.firstChild;
-            while (curChild) {
-                var key = getNodeKey(curChild);
-                if (key) {
-                    fromNodesLookup[key] = curChild;
-                }
-
-                // Walk recursively
-                indexTree(curChild);
-
-                curChild = curChild.nextSibling;
-            }
-        }
-    }
-
-    indexTree(fromNode);
-
-    function handleNodeAdded(el) {
-        onNodeAdded(el);
-
-        var curChild = el.firstChild;
-        while (curChild) {
-            var nextSibling = curChild.nextSibling;
-
-            var key = getNodeKey(curChild);
-            if (key) {
-                var unmatchedFromEl = fromNodesLookup[key];
-                if (unmatchedFromEl && compareNodeNames(curChild, unmatchedFromEl)) {
-                    curChild.parentNode.replaceChild(unmatchedFromEl, curChild);
-                    morphEl(unmatchedFromEl, curChild);
-                }
-            }
-
-            handleNodeAdded(curChild);
-            curChild = nextSibling;
-        }
-    }
-
-    function morphEl(fromEl, toEl, childrenOnly) {
-        var toElKey = getNodeKey(toEl);
-        var curFromNodeKey;
-
-        if (toElKey) {
-            // If an element with an ID is being morphed then it is will be in the final
-            // DOM so clear it out of the saved elements collection
-            delete fromNodesLookup[toElKey];
-        }
-
-        if (toNode.isSameNode && toNode.isSameNode(fromNode)) {
-            return;
-        }
-
-        if (!childrenOnly) {
-            if (onBeforeElUpdated(fromEl, toEl) === false) {
-                return;
-            }
-
-            morphAttrs(fromEl, toEl);
-            onElUpdated(fromEl);
-
-            if (onBeforeElChildrenUpdated(fromEl, toEl) === false) {
-                return;
-            }
-        }
-
-        if (fromEl.nodeName !== 'TEXTAREA') {
-            var curToNodeChild = toEl.firstChild;
-            var curFromNodeChild = fromEl.firstChild;
-            var curToNodeKey;
-
-            var fromNextSibling;
-            var toNextSibling;
-            var matchingFromEl;
-
-            outer: while (curToNodeChild) {
-                toNextSibling = curToNodeChild.nextSibling;
-                curToNodeKey = getNodeKey(curToNodeChild);
-
-                while (curFromNodeChild) {
-                    fromNextSibling = curFromNodeChild.nextSibling;
-
-                    if (curToNodeChild.isSameNode && curToNodeChild.isSameNode(curFromNodeChild)) {
-                        curToNodeChild = toNextSibling;
-                        curFromNodeChild = fromNextSibling;
-                        continue outer;
-                    }
-
-                    curFromNodeKey = getNodeKey(curFromNodeChild);
-
-                    var curFromNodeType = curFromNodeChild.nodeType;
-
-                    var isCompatible = undefined;
-
-                    if (curFromNodeType === curToNodeChild.nodeType) {
-                        if (curFromNodeType === ELEMENT_NODE) {
-                            // Both nodes being compared are Element nodes
-
-                            if (curToNodeKey) {
-                                // The target node has a key so we want to match it up with the correct element
-                                // in the original DOM tree
-                                if (curToNodeKey !== curFromNodeKey) {
-                                    // The current element in the original DOM tree does not have a matching key so
-                                    // let's check our lookup to see if there is a matching element in the original
-                                    // DOM tree
-                                    if ((matchingFromEl = fromNodesLookup[curToNodeKey])) {
-                                        if (curFromNodeChild.nextSibling === matchingFromEl) {
-                                            // Special case for single element removals. To avoid removing the original
-                                            // DOM node out of the tree (since that can break CSS transitions, etc.),
-                                            // we will instead discard the current node and wait until the next
-                                            // iteration to properly match up the keyed target element with its matching
-                                            // element in the original tree
-                                            isCompatible = false;
-                                        } else {
-                                            // We found a matching keyed element somewhere in the original DOM tree.
-                                            // Let's moving the original DOM node into the current position and morph
-                                            // it.
-
-                                            // NOTE: We use insertBefore instead of replaceChild because we want to go through
-                                            // the `removeNode()` function for the node that is being discarded so that
-                                            // all lifecycle hooks are correctly invoked
-                                            fromEl.insertBefore(matchingFromEl, curFromNodeChild);
-
-                                            fromNextSibling = curFromNodeChild.nextSibling;
-
-                                            if (curFromNodeKey) {
-                                                // Since the node is keyed it might be matched up later so we defer
-                                                // the actual removal to later
-                                                addKeyedRemoval(curFromNodeKey);
-                                            } else {
-                                                // NOTE: we skip nested keyed nodes from being removed since there is
-                                                //       still a chance they will be matched up later
-                                                removeNode(curFromNodeChild, fromEl, true /* skip keyed nodes */);
-                                            }
-
-                                            curFromNodeChild = matchingFromEl;
-                                        }
-                                    } else {
-                                        // The nodes are not compatible since the "to" node has a key and there
-                                        // is no matching keyed node in the source tree
-                                        isCompatible = false;
-                                    }
-                                }
-                            } else if (curFromNodeKey) {
-                                // The original has a key
-                                isCompatible = false;
-                            }
-
-                            isCompatible = isCompatible !== false && compareNodeNames(curFromNodeChild, curToNodeChild);
-                            if (isCompatible) {
-                                // We found compatible DOM elements so transform
-                                // the current "from" node to match the current
-                                // target DOM node.
-                                morphEl(curFromNodeChild, curToNodeChild);
-                            }
-
-                        } else if (curFromNodeType === TEXT_NODE || curFromNodeType == COMMENT_NODE) {
-                            // Both nodes being compared are Text or Comment nodes
-                            isCompatible = true;
-                            // Simply update nodeValue on the original node to
-                            // change the text value
-                            curFromNodeChild.nodeValue = curToNodeChild.nodeValue;
-                        }
-                    }
-
-                    if (isCompatible) {
-                        // Advance both the "to" child and the "from" child since we found a match
-                        curToNodeChild = toNextSibling;
-                        curFromNodeChild = fromNextSibling;
-                        continue outer;
-                    }
-
-                    // No compatible match so remove the old node from the DOM and continue trying to find a
-                    // match in the original DOM. However, we only do this if the from node is not keyed
-                    // since it is possible that a keyed node might match up with a node somewhere else in the
-                    // target tree and we don't want to discard it just yet since it still might find a
-                    // home in the final DOM tree. After everything is done we will remove any keyed nodes
-                    // that didn't find a home
-                    if (curFromNodeKey) {
-                        // Since the node is keyed it might be matched up later so we defer
-                        // the actual removal to later
-                        addKeyedRemoval(curFromNodeKey);
-                    } else {
-                        // NOTE: we skip nested keyed nodes from being removed since there is
-                        //       still a chance they will be matched up later
-                        removeNode(curFromNodeChild, fromEl, true /* skip keyed nodes */);
-                    }
-
-                    curFromNodeChild = fromNextSibling;
-                }
-
-                // If we got this far then we did not find a candidate match for
-                // our "to node" and we exhausted all of the children "from"
-                // nodes. Therefore, we will just append the current "to" node
-                // to the end
-                if (curToNodeKey && (matchingFromEl = fromNodesLookup[curToNodeKey]) && compareNodeNames(matchingFromEl, curToNodeChild)) {
-                    fromEl.appendChild(matchingFromEl);
-                    morphEl(matchingFromEl, curToNodeChild);
-                } else {
-                    var onBeforeNodeAddedResult = onBeforeNodeAdded(curToNodeChild);
-                    if (onBeforeNodeAddedResult !== false) {
-                        if (onBeforeNodeAddedResult) {
-                            curToNodeChild = onBeforeNodeAddedResult;
-                        }
-
-                        if (curToNodeChild.actualize) {
-                            curToNodeChild = curToNodeChild.actualize(fromEl.ownerDocument || doc);
-                        }
-                        fromEl.appendChild(curToNodeChild);
-                        handleNodeAdded(curToNodeChild);
-                    }
-                }
-
-                curToNodeChild = toNextSibling;
-                curFromNodeChild = fromNextSibling;
-            }
-
-            // We have processed all of the "to nodes". If curFromNodeChild is
-            // non-null then we still have some from nodes left over that need
-            // to be removed
-            while (curFromNodeChild) {
-                fromNextSibling = curFromNodeChild.nextSibling;
-                if ((curFromNodeKey = getNodeKey(curFromNodeChild))) {
-                    // Since the node is keyed it might be matched up later so we defer
-                    // the actual removal to later
-                    addKeyedRemoval(curFromNodeKey);
-                } else {
-                    // NOTE: we skip nested keyed nodes from being removed since there is
-                    //       still a chance they will be matched up later
-                    removeNode(curFromNodeChild, fromEl, true /* skip keyed nodes */);
-                }
-                curFromNodeChild = fromNextSibling;
-            }
-        }
-
-        var specialElHandler = specialElHandlers[fromEl.nodeName];
-        if (specialElHandler) {
-            specialElHandler(fromEl, toEl);
-        }
-    } // END: morphEl(...)
-
-    var morphedNode = fromNode;
-    var morphedNodeType = morphedNode.nodeType;
-    var toNodeType = toNode.nodeType;
-
-    if (!childrenOnly) {
-        // Handle the case where we are given two DOM nodes that are not
-        // compatible (e.g. <div> --> <span> or <div> --> TEXT)
-        if (morphedNodeType === ELEMENT_NODE) {
-            if (toNodeType === ELEMENT_NODE) {
-                if (!compareNodeNames(fromNode, toNode)) {
-                    onNodeDiscarded(fromNode);
-                    morphedNode = moveChildren(fromNode, createElementNS(toNode.nodeName, toNode.namespaceURI));
-                }
-            } else {
-                // Going from an element node to a text node
-                morphedNode = toNode;
-            }
-        } else if (morphedNodeType === TEXT_NODE || morphedNodeType === COMMENT_NODE) { // Text or comment node
-            if (toNodeType === morphedNodeType) {
-                morphedNode.nodeValue = toNode.nodeValue;
-                return morphedNode;
-            } else {
-                // Text node to something else
-                morphedNode = toNode;
-            }
-        }
-    }
-
-    if (morphedNode === toNode) {
-        // The "to node" was not compatible with the "from node" so we had to
-        // toss out the "from node" and use the "to node"
-        onNodeDiscarded(fromNode);
-    } else {
-        morphEl(morphedNode, toNode, childrenOnly);
-
-        // We now need to loop over any keyed nodes that might need to be
-        // removed. We only do the removal if we know that the keyed node
-        // never found a match. When a keyed node is matched up we remove
-        // it out of fromNodesLookup and we use fromNodesLookup to determine
-        // if a keyed node has been matched up or not
-        if (keyedRemovalList) {
-            for (var i=0, len=keyedRemovalList.length; i<len; i++) {
-                var elToRemove = fromNodesLookup[keyedRemovalList[i]];
-                if (elToRemove) {
-                    removeNode(elToRemove, elToRemove.parentNode, false);
-                }
-            }
-        }
-    }
-
-    if (!childrenOnly && morphedNode !== fromNode && fromNode.parentNode) {
-        if (morphedNode.actualize) {
-            morphedNode = morphedNode.actualize(fromNode.ownerDocument || doc);
-        }
-        // If we had to swap out the from node with a new node because the old
-        // node was not compatible with the target node then we need to
-        // replace the old DOM node in the original DOM tree. This is only
-        // possible if the original DOM node was part of a DOM tree which
-        // we know is the case if it has a parent node.
-        fromNode.parentNode.replaceChild(morphedNode, fromNode);
-    }
-
-    return morphedNode;
-}
-
-module.exports = morphdom;
-
-},{}],5:[function(require,module,exports){
-var parse = require('acorn').parse;
-
-/**
- * Iterates through the AST nodes of the  given content string,
- * replacing the source of each node with the return value of `callback`.
- *
- * @param content { String }
- * @param callback { Function}
- */
-module.exports = function reshift(content, callback) {
-  var ast = parse(content);
-
-  var chunks = content.split('');
-
-  (function walk(node, parent) {
-    node.parent = parent;
-    node.sources = [];
-
-    node.toString = function toString() {
-      return chunks.slice(this.start, this.end).join('');
-    };
-
-    for (var key in node) {
-      if (key == 'parent') {
-        continue;
-      }
-
-      var child = node[key];
-      if (child == null) {
-        continue;
-      }
-
-      if (typeof child != 'string' && typeof child.length != 'undefined') {
-        for (var i = 0; i < child.length; i++) {
-          if (child == null || typeof child[i].type != 'string') {
-            continue;
-          }
-
-          walk(child[i], node);
-        }
-      } else if (child && typeof child.type == 'string') {
-        walk(child, node);
-      }
-    }
-
-    var chunk = callback(node);
-    if (chunk) {
-      chunks[node.start] = chunk.toString();
-      for (var index = node.start + 1; index < node.end; index++) {
-        chunks[index] = '';
-      }
-    }
-  }(ast));
-
-  return {
-    code: chunks.join(''),
-    toString: function toString() {
-      return this.code;
-    },
-  };
-};
-
-},{"acorn":2}],6:[function(require,module,exports){
-var diff = require('fast-diff');
-var reshift = require('reshift');
-
-__call = [];
-__function = [];
-__cache = {};
-
-module.exports = function revaluate(content, name, evaluator) {
-  var cache = __cache[name] || {
-    content: '',
-  };
-
-  var diffs = diff(cache.content, content);
-
-  var indices = [];
-  var offset = 0;
-  for (var i = 0; i < diffs.length; i++) {
-    var type = diffs[i][0];
-    var text = diffs[i][1];
-
-    for (var j = 0; j < text.length; j++) {
-      if (type == -1) {
-        offset++;
-      } else if (type == 0) {
-        indices.push(offset);
-        offset++;
-      } else {
-        indices.push(null);
-      }
-    }
-  }
-
-  var key = function(node) {
-    var start = indices[node.start];
-    var end = indices[node.end];
-
-    return start + ',' + end;
-  };
-
-  var range = function(node) {
-    return node.start + ',' + node.end;
-  };
-
-  var entries = {};
-  var output = reshift(content, function(node) {
-    if (node.type == 'FunctionExpression' || node.type == 'FunctionDeclaration') {
-      var entry = entries[range(node)] = (
-        cache[key(node)] || entries[range(node)] || {}
-      );
-
-      entry.node = node;
-
-      if (entry.index == undefined) {
-        entry.index = __function.length++;
-      }
-
-      var index = entry.index;
-      var name = node.id ? node.id.name : '';
-      var code = node.toString();
-
-      if (name.length > 0) {
-        code = code.replace(name, '');
-      }
-
-      __function[index] = '(' + code + ')';
-
-      return [
-        'function $name() {',
-        '  if (__function[$index].length > 0) {',
-        '    __function[$index] = eval(__function[$index]);',
-        '  }',
-        '  return __function[$index].apply(this, arguments);',
-        '}',
-      ].join('\n')
-        .replace(/\$index/g, index)
-        .replace(/\$name/g, name);
-    }
-
-    if (node.type == 'CallExpression') {
-      var scope = (function next(node) {
-        if (node.type == 'Program') {
-          return node;
-        }
-
-        if (node.type == 'FunctionExpression' || node.type == 'FunctionDeclaration') {
-          return node;
-        }
-
-        return next(node.parent);
-      }(node.parent));
-      if (scope.type != 'Program') {
-        return node.toString();
-      }
-
-      var entry = entries[range(node)] = (
-        cache[key(node)] || entries[range(node)] || {}
-      );
-
-      entry.node = node;
-
-      var signature = JSON.stringify(node, [
-        'name',
-        'arguments',
-        'value',
-      ]);
-
-      if (entry.signature != signature) {
-        entry.signature = signature;
-        entry.index = __call.length++;
-      }
-
-      var index = entry.index;
-      var code = node.toString();
-
-      return [
-        '($index in __call ? __call[$index] : __call[$index] = $code)',
-      ].join('\n')
-        .replace(/\$index/g, index)
-        .replace(/\$code/g, code);
-    }
-
-    return node.toString();
-  });
-
-  for (var key in cache) {
-    var entry = cache[key];
-    var node = entry.node;
-    var dead = true;
-
-    for (var key in entries) {
-      if (entry == entries[key]) {
-        dead = false;
-        break;
-      }
-    }
-
-    if (node == null || dead == false) {
-      continue;
-    }
-
-    if (node.type == 'FunctionExpression' || node.type == 'FunctionDeclaration') {
-      __function[entry.index] = '(function() { })';
-    }
-  }
-
-  __cache[name] = entries;
-  __cache[name].content = content;
-
-  return evaluator ? evaluator(output) : output;
-}
-
-},{"fast-diff":3,"reshift":5}]},{},[1]);
+},{}]},{},[1]);
