@@ -108,6 +108,7 @@
 
         display: block;
         position: absolute;
+
         top: 0;
         left: 0;
         right: 0;
@@ -121,19 +122,117 @@
 
       .editor,
       .frame {
-        border: 0;
+        display: block;
         width: 100%;
         height: 100%;
       }
 
-      .editor {
-        font-family: monospace;
-        font-size: 16px;
-        resize: none;
+      .frame {
+        border: 0;
       }
 
-      .editor:focus {
+      .editor {
+        overflow: auto;
+        position: relative;
+
+        background: #ffffff;
+        font-size: 16px;
+        line-height: 1;
+        font-family: monospace;
+      }
+
+      .editor-input,
+      .editor-output {
+        min-width: 100%;
+        min-height: 100%;
+
+        background: 0;
+        border: 0;
+        margin: 0;
         outline: none;
+        padding: 0;
+
+        font-size: inherit;
+        line-height: inherit;
+        font-family: inherit;
+
+        overflow: hidden;
+      }
+
+      .editor-input {
+        color: rgba(0, 0, 0, 0.25);
+        resize: none;
+
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 0;
+      }
+
+      .token {
+        z-index: 1;
+      }
+
+      .token.comment,
+      .token.prolog,
+      .token.doctype,
+      .token.cdata {
+          color: #999988; font-style: italic;
+      }
+
+      .token.namespace {
+          opacity: .7;
+      }
+
+      .token.string,
+      .token.attr-value {
+          color: #e3116c;
+      }
+      .token.punctuation,
+      .token.operator {
+          color: #393A34; /* no highlight */
+      }
+
+      .token.entity,
+      .token.url,
+      .token.symbol,
+      .token.number,
+      .token.boolean,
+      .token.variable,
+      .token.constant,
+      .token.property,
+      .token.regex,
+      .token.inserted {
+          color: #36acaa;
+      }
+
+      .token.atrule,
+      .token.keyword,
+      .token.attr-name,
+      .language-autohotkey .token.selector {
+          color: #00a4db;
+      }
+
+      .token.function,
+      .token.deleted,
+      .language-autohotkey .token.tag {
+          color: #9a050f;
+      }
+
+      .token.tag,
+      .token.selector,
+      .language-autohotkey .token.keyword {
+          color: #00009f;
+      }
+
+      .token.important,
+      .token.function,
+      .token.bold {
+          font-weight: bold;
+      }
+
+      .token.italic {
+          font-style: italic;
       }
 
       .grid {
@@ -149,6 +248,8 @@
         width: 100%;
       }
     </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.6.0/prism.js"></script>
   </head>
 
   <body class="container">
@@ -187,19 +288,51 @@
         </header>
 
         <span class="tab-pane">
-          <textarea class="editor"></textarea>
+          <label class="editor" data-filename="$id">
+            <pre class="editor-output" data-language="$language"></pre>
+            <textarea class="editor-input" data-language="$language"></textarea>
+          </label>
         </span>
 
         <script>
           setTimeout(function(item) {
-            var textarea = item.querySelector('textarea');
-            textarea.disabled = true;
+            var input = item.querySelector('textarea');
+            var editor = item.querySelector('label');
+            var output = item.querySelector('pre');
 
+          	input.spellcheck = false;
+          	input.wrap = "off";
+
+            input.onscroll = function(event) {
+              var value = input.value;
+              var lines = value.split('\n');
+
+              input.rows = lines.length + 1;
+            };
+
+            input.oninput = function() {
+              var value = input.value;
+
+              var lines = value.split('\n');
+              input.rows = lines.length + 1;
+
+              var grammar = Prism.languages[
+                input.getAttribute('data-language')
+              ];
+
+              output.innerHTML = Prism.highlight(value, grammar);
+            };
+
+            input.disabled = true;
             var xhr = new XMLHttpRequest();
             xhr.open('GET', ['demo', item.id].join('/'));
             xhr.onload = function() {
-              textarea.value = xhr.responseText;
-              textarea.disabled = false;
+              input.value = xhr.responseText;
+              input.disabled = false;
+
+              var event = document.createEvent('Event');
+              event.initEvent('input', true, true);
+              input.dispatchEvent(event);
             };
 
             xhr.send(null);
@@ -245,7 +378,8 @@
 
         var id = 'index.html';
         group.innerHTML += tab.text
-          .replace(/\$id/g, id);
+          .replace(/\$id/g, id)
+          .replace(/\$language/g, 'html');
 
         var scripts = frame.contentDocument.getElementsByTagName('script');
         for (var i = 0; i < scripts.length; i++) {
@@ -256,7 +390,8 @@
 
           var id = script.getAttribute('src');
           group.innerHTML += tab.text
-            .replace(/\$id/g, id);
+            .replace(/\$id/g, id)
+            .replace(/\$language/g, 'javascript');
         }
 
         var current = editor.querySelector('.tab:last-child');
