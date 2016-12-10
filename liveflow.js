@@ -213,7 +213,7 @@ if (documentElement.hasAttribute('live')) {
     }, 0);
 
     setTimeout(function next() {
-      if (interval < 0) {
+      if (Number.isNaN(interval)) {
         return;
       }
 
