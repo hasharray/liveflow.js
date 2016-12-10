@@ -296,9 +296,26 @@
 
         <script>
           setTimeout(function(item) {
-            var input = item.querySelector('textarea');
-            var editor = item.querySelector('label');
-            var output = item.querySelector('pre');
+            var group = item.closest('.tab-group');
+            var link = item.querySelector('.tab-link');
+
+            link.onclick = function() {
+              var active = group.querySelector('.active');
+              if (active) {
+                active.classList.remove('active');
+              }
+
+              var href = link.getAttribute('href');
+              var tab = group.querySelector('[id="' + href.slice(1) + '"]');
+
+              tab.classList.add('active');
+
+              event.preventDefault();
+            };
+
+            var editor = item.querySelector('.editor');
+            var input = item.querySelector('.editor-input');
+            var output = item.querySelector('.editor-output');
 
           	input.spellcheck = false;
           	input.wrap = "off";
@@ -321,6 +338,17 @@
               ];
 
               output.innerHTML = Prism.highlight(value, grammar);
+
+              var content = frame.contentDocument;
+              if (/\.js/.test(item.id)) {
+                var script = content.querySelector(
+                  'script[src*="' + item.id + '"]'
+                );
+
+                script.inject(input.value);
+              } else if (/\.html/.test(item.id)) {
+                content.inject(input.value);
+              }
             };
 
             input.disabled = true;
@@ -342,36 +370,6 @@
     </script>
 
     <script type="text/javascript">
-      editor.oninput = function(event) {
-        var target = event.target;
-        var item = target.closest('.tab');
-
-        var content = frame.contentDocument;
-
-        if (/\.js/.test(item.id)) {
-          var script = content.querySelector(
-            'script[src*="' + item.id + '"]'
-          );
-
-          script.inject(target.value);
-        } else if (/\.html/.test(item.id)) {
-          content.inject(target.value);
-        }
-      };
-
-      editor.onclick = function(event) {
-        var target = event.target;
-        if (/tab-link/.test(target.className)) {
-          var previous = editor.querySelector('.active');
-          previous.className = previous.className.replace(/active/, '');
-
-          var current = target.closest('.tab');
-          current.className += ' active';
-
-          event.preventDefault();
-        }
-      };
-
       frame.onload = function() {
         var group = editor.querySelector('.tab-group');
         group.innerHTML = '';
