@@ -120,6 +120,34 @@ if (documentElement.hasAttribute('live')) {
     }
   };
 
+  HTMLLinkElement.prototype.reload = function() {
+    var href = this.getAttribute('href')
+      .replace(/[?&]reload=.*/, '')
+      .replace(/.*/, function(value) {
+        return value + (/\?/.test(value) ? '&' : '?') + 'reload=' + Date.now();
+      });
+
+    this.setAttribute('href', href);
+
+    var reload = document.createEvent('Event');
+    reload.initEvent('reload', true, false);
+    element.dispatchEvent(reload);
+  };
+
+  HTMLImageElement.prototype.reload = function() {
+    var src = this.getAttribute('src')
+      .replace(/[?&]reload=.*/, '')
+      .replace(/.*/, function(value) {
+        return value + (/\?/.test(value) ? '&' : '?') + 'reload=' + Date.now();
+      });
+
+    this.setAttribute('src', src);
+
+    var reload = document.createEvent('Event');
+    reload.initEvent('reload', true, false);
+    element.dispatchEvent(reload);
+  };
+
   window.reload = function reload(pattern) {
     if (typeof pattern == 'string') {
       pattern = RegExp(pattern);
@@ -146,21 +174,7 @@ if (documentElement.hasAttribute('live')) {
           continue;
         }
 
-        if (element.reload) {
-          element.reload();
-        } else {
-          var url = value
-          .replace(/[?&]reload=.*/, '')
-          .replace(/.*/, function(value) {
-            return value + (/\?/.test(value) ? '&' : '?') + 'reload=' + Date.now();
-          });
-
-          element.setAttribute(name, url);
-
-          var reload = document.createEvent('Event');
-          reload.initEvent('reload', true, false);
-          element.dispatchEvent(reload);
-        }
+        element.reload();
       }
     }
 
@@ -318,7 +332,7 @@ if (documentElement.hasAttribute('live')) {
 
       if (script.hasAttribute('type')) {
         var type = script.getAttribute('type');
-        if (~types.indexOf(type)) {
+        if (types.indexOf(type) < 0) {
           continue;
         }
 
