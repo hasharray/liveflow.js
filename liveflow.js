@@ -25,29 +25,6 @@ if (currentScript.hasAttribute('data-include')) {
   include = RegExp(currentScript.getAttribute('data-include'));
 }
 
-var headers = {};
-var requests = {};
-var contents = {};
-
-var types = [
-  'application/javascript',
-  'application/ecmascript',
-  'application/x-ecmascript',
-  'application/x-javascript',
-  'text/ecmascript',
-  'text/javascript',
-  'text/javascript1.0',
-  'text/javascript1.1',
-  'text/javascript1.2',
-  'text/javascript1.3',
-  'text/javascript1.4',
-  'text/javascript1.5',
-  'text/jscript',
-  'text/livescript',
-  'text/x-ecmascript',
-  'text/x-javascript'
-];
-
 if (documentElement.hasAttribute('live')) {
   var revaluate = require('revaluate');
   var morphdom = require('morphdom');
@@ -184,7 +161,7 @@ if (documentElement.hasAttribute('live')) {
   };
 
   window.onload = function() {
-    setTimeout(function next() {
+    setTimeout(function next(contents) {
       var scripts = document.scripts;
 
       for (var i = 0; i < scripts.length; i++) {
@@ -199,20 +176,20 @@ if (documentElement.hasAttribute('live')) {
         }
 
         var filename = script.getAttribute('title');
-        if (script.textContent != contents[filename]) {
-          var content = script.textContent;
+        var text = script.text;
+        if (text != contents[filename]) {
           if (contents[filename]) {
-            script.inject(script.text);
+            script.inject(text);
           }
 
-          contents[filename] = content;
+          contents[filename] = text;
         }
       }
 
-      setTimeout(next, 250);
-    }, 0);
+      setTimeout(next, 250, contents);
+    }, 0, {});
 
-    setTimeout(function next() {
+    setTimeout(function next(headers, requests) {
       if (Number.isNaN(interval)) {
         return;
       }
@@ -292,8 +269,8 @@ if (documentElement.hasAttribute('live')) {
         }(url));
       }
 
-      setTimeout(next, interval);
-    }, 0);
+      setTimeout(next, interval, headers, requests);
+    }, 0, {}, {});
   };
 } else {
   document.write('<plaintext>');
@@ -323,6 +300,25 @@ if (documentElement.hasAttribute('live')) {
     var scripts = [];
     scripts.push.apply(scripts, head.getElementsByTagName('script'));
     scripts.push.apply(scripts, body.getElementsByTagName('script'));
+
+    var types = [
+      'application/javascript',
+      'application/ecmascript',
+      'application/x-ecmascript',
+      'application/x-javascript',
+      'text/ecmascript',
+      'text/javascript',
+      'text/javascript1.0',
+      'text/javascript1.1',
+      'text/javascript1.2',
+      'text/javascript1.3',
+      'text/javascript1.4',
+      'text/javascript1.5',
+      'text/jscript',
+      'text/livescript',
+      'text/x-ecmascript',
+      'text/x-javascript'
+    ];
 
     for (var i = 0; i < scripts.length; i++) {
       var script = scripts[i];
