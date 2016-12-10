@@ -303,9 +303,13 @@
             }
 
             var href = link.getAttribute('href');
-            var tab = group.querySelector('[id="' + href.slice(1) + '"]');
 
-            tab.classList.add('active');
+            var item = group.querySelector('[id="' + href.slice(1) + '"]');
+            item.classList.add('active');
+
+            var window = item.closest('.window');
+            var title = window.querySelector('.window-title');
+            title.innerText = item.id;
 
             event.preventDefault();
           };
@@ -390,8 +394,11 @@
           .replace(/\$language/g, 'javascript');
       }
 
-      var current = editor.querySelector('.tab:last-child');
-      current.className += ' active';
+      var item = editor.querySelector('.tab:last-child');
+      item.className += ' active';
+
+      var title = editor.querySelector('.window-title');
+      title.innerText = item.id;
 
       setTimeout(function(group) {
         var scripts = Array.from(
