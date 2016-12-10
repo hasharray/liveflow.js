@@ -45,6 +45,9 @@
     }
 
     .window {
+      display: flex;
+      flex-direction: column;
+
       max-width: 80ch;
       height: 380px;
       border-radius: 4px;
@@ -62,8 +65,7 @@
     }
 
     .window-pane {
-      width: 100%;
-      height: 100%;
+      flex: 1;
       overflow: hidden;
     }
 
@@ -102,13 +104,13 @@
     }
 
     .tab-pane {
-      margin: 2rem 0;
+      margin: 0;
       padding: 0;
 
       display: block;
       position: absolute;
 
-      top: 0;
+      top: 2rem;
       left: 0;
       right: 0;
       bottom: 0;
