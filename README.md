@@ -1,6 +1,6 @@
-# Thingamajig.js - Live Editing for Node.js and Browsers
+# Liveflow.js - Live Editing for Node.js and Browsers
 
-Thingamajig.js is a *small* runtime extension that enables live-editing of
+Liveflow.js is a *small* runtime extension that enables live-editing of
 scripts as-well as live-reloading of required json files.
 
 It's a pure, self-contained JavaScript based implementation with no external
@@ -45,7 +45,7 @@ object.
 
 ## Getting Started
 
-Thingamajig.js has been designed to be as **configuration free** as possible,
+Liveflow.js has been designed to be as **configuration free** as possible,
 just include the script in your runtime environment and be done with it.
 
 ### Node.js

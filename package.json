@@ -1,9 +1,9 @@
 {
-  "name": "thingamajig",
-  "version": "0.0.2",
+  "name": "liveflow",
+  "version": "0.0.0",
   "description": "live editing for node.js and the browser",
-  "main": "lib/thingamajig.js",
-  "browser": "lib/thingamajig/browser.js",
+  "main": "lib/liveflow.js",
+  "browser": "lib/liveflow/browser.js",
   "directories": {
     "example": "example"
   },
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hasharray/thingamajig.js.git"
+    "url": "git+https://github.com/hasharray/liveflow.js.git"
   },
   "keywords": [
     "live",
@@ -32,7 +32,7 @@
     "reload"
   ],
   "bugs": {
-    "url": "https://github.com/hasharray/thingamajig.js/issues"
+    "url": "https://github.com/hasharray/liveflow.js/issues"
   },
-  "homepage": "https://github.com/hasharray/thingamajig.js"
+  "homepage": "https://github.com/hasharray/liveflow.js"
 }
