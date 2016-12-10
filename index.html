@@ -1,417 +1,416 @@
-  <!DOCTYPE html>
-  <html lang="en-us">
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-  <head>
-    <style>
-      * {
-        box-sizing: border-box;
-      }
+    .container {
+      padding: 0;
+      margin: 0;
+      font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      background-color: #eeeeee;
+    }
 
-      .container {
-        padding: 0;
-        margin: 0;
-        font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-        font-size: 16px;
-        line-height: 1.5;
-        background-color: #eeeeee;
-      }
+    .content {
+      display: flex;
+    }
 
-      .content {
-        display: flex;
-      }
+    .banner {
+      background-color: #f7df1e;
+      color: #333;
+      text-align: center;
+      padding-top: 5rem;
+      padding-bottom: 10rem;
+    }
 
-      .banner {
-        background-color: #f7df1e;
-        color: #333;
-        text-align: center;
-        padding-top: 5rem;
-        padding-bottom: 10rem;
-      }
+    .banner-title {
+      font-size: 4rem;
+      margin-top: 0;
+      margin-bottom: 0.1rem;
+    }
 
-      .banner-title {
-        font-size: 4rem;
-        margin-top: 0;
-        margin-bottom: 0.1rem;
-      }
+    .banner-tagline {
+      margin-bottom: 2rem;
+      font-size: 1.25em;
+      font-weight: normal;
+      opacity: 0.7;
+    }
 
-      .banner-tagline {
-        margin-bottom: 2rem;
-        font-size: 1.25em;
-        font-weight: normal;
-        opacity: 0.7;
-      }
+    .content {
+      margin-top: -7rem;
+    }
 
-      .content {
-        margin-top: -7rem;
-      }
+    .window {
+      max-width: 80ch;
+      height: 380px;
+      border-radius: 4px;
+      background: #fff;
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+    }
 
-      .window {
-        max-width: 80ch;
-        height: 380px;
-        border-radius: 4px;
-        background: #fff;
-        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-      }
+    .window-header {
+      background: #ececec;
+      padding: 0.4rem;
+      font-size: 0.9rem;
+      color: #a5a5a5;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: center;
+    }
 
-      .window-header {
-        background: #ececec;
-        padding: 0.4rem;
-        font-size: 0.9rem;
-        color: #a5a5a5;
-        border-bottom: 1px solid #e0e0e0;
-        text-align: center;
-      }
+    .window-pane {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
 
-      .window-pane {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-      }
+    .tab-group {
+      display: flex;
 
-      .tab-group {
-        display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
 
-        list-style: none;
-        margin: 0;
-        padding: 0;
+      position: relative;
+      height: 100%;
+      width: 100%;
+    }
 
-        position: relative;
-        height: 100%;
-        width: 100%;
-      }
+    .tab {
+      background: #ececec;
+      flex: 1;
+      margin: 0;
+      z-index: 0;
+      height: 2rem;
+    }
 
-      .tab {
-        background: #ececec;
-        flex: 1;
-        margin: 0;
-        z-index: 0;
-        height: 2rem;
-      }
+    .tab-header {
+      text-align: center;
+      padding: 0.25rem;
+      height: 2rem;
+    }
 
-      .tab-header {
-        text-align: center;
-        padding: 0.25rem;
-        height: 2rem;
-      }
+    .tab-link {
+      display: block;
+      width: 100%;
+      height: 100%;
+      color: inherit;
+      text-decoration: none;
+    }
 
-      .tab-link {
-        display: block;
-        width: 100%;
-        height: 100%;
-        color: inherit;
-        text-decoration: none;
-      }
+    .tab-pane {
+      margin: 2rem 0;
+      padding: 0;
 
-      .tab-pane {
-        margin: 2rem 0;
-        padding: 0;
+      display: block;
+      position: absolute;
 
-        display: block;
-        position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
 
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-      }
+    .tab.active {
+      z-index: 1;
+      background: #ffffff;
+    }
 
-      .tab.active {
-        z-index: 1;
-        background: #ffffff;
-      }
+    .editor,
+    .frame {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
 
-      .editor,
-      .frame {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
+    .frame {
+      border: 0;
+    }
 
-      .frame {
-        border: 0;
-      }
+    .editor {
+      overflow: auto;
+      position: relative;
 
-      .editor {
-        overflow: auto;
-        position: relative;
+      background: #ffffff;
+      font-size: 16px;
+      line-height: 1;
+      font-family: monospace;
+    }
 
-        background: #ffffff;
-        font-size: 16px;
-        line-height: 1;
-        font-family: monospace;
-      }
+    .editor-input,
+    .editor-output {
+      min-width: 100%;
+      min-height: 100%;
 
-      .editor-input,
-      .editor-output {
-        min-width: 100%;
-        min-height: 100%;
+      background: 0;
+      border: 0;
+      margin: 0;
+      outline: none;
+      padding: 0;
 
-        background: 0;
-        border: 0;
-        margin: 0;
-        outline: none;
-        padding: 0;
+      font-size: inherit;
+      line-height: inherit;
+      font-family: inherit;
+    }
 
-        font-size: inherit;
-        line-height: inherit;
-        font-family: inherit;
-      }
+    .editor-input {
+      color: rgba(0, 0, 0, 0.25);
+      resize: none;
 
-      .editor-input {
-        color: rgba(0, 0, 0, 0.25);
-        resize: none;
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 0;
+    }
 
-        position: absolute;
-        left: 0;
-        top: 0;
-        z-index: 0;
-      }
+    .token {
+      z-index: 1;
+    }
 
-      .token {
-        z-index: 1;
-      }
+    .token.comment,
+    .token.prolog,
+    .token.doctype,
+    .token.cdata {
+        color: #999988; font-style: italic;
+    }
 
-      .token.comment,
-      .token.prolog,
-      .token.doctype,
-      .token.cdata {
-          color: #999988; font-style: italic;
-      }
+    .token.namespace {
+        opacity: .7;
+    }
 
-      .token.namespace {
-          opacity: .7;
-      }
+    .token.string,
+    .token.attr-value {
+        color: #e3116c;
+    }
+    .token.punctuation,
+    .token.operator {
+        color: #393A34; /* no highlight */
+    }
 
-      .token.string,
-      .token.attr-value {
-          color: #e3116c;
-      }
-      .token.punctuation,
-      .token.operator {
-          color: #393A34; /* no highlight */
-      }
+    .token.entity,
+    .token.url,
+    .token.symbol,
+    .token.number,
+    .token.boolean,
+    .token.variable,
+    .token.constant,
+    .token.property,
+    .token.regex,
+    .token.inserted {
+        color: #36acaa;
+    }
 
-      .token.entity,
-      .token.url,
-      .token.symbol,
-      .token.number,
-      .token.boolean,
-      .token.variable,
-      .token.constant,
-      .token.property,
-      .token.regex,
-      .token.inserted {
-          color: #36acaa;
-      }
+    .token.atrule,
+    .token.keyword,
+    .token.attr-name,
+    .language-autohotkey .token.selector {
+        color: #00a4db;
+    }
 
-      .token.atrule,
-      .token.keyword,
-      .token.attr-name,
-      .language-autohotkey .token.selector {
-          color: #00a4db;
-      }
+    .token.function,
+    .token.deleted,
+    .language-autohotkey .token.tag {
+        color: #9a050f;
+    }
 
-      .token.function,
-      .token.deleted,
-      .language-autohotkey .token.tag {
-          color: #9a050f;
-      }
+    .token.tag,
+    .token.selector,
+    .language-autohotkey .token.keyword {
+        color: #00009f;
+    }
 
-      .token.tag,
-      .token.selector,
-      .language-autohotkey .token.keyword {
-          color: #00009f;
-      }
+    .token.important,
+    .token.function,
+    .token.bold {
+        font-weight: bold;
+    }
 
-      .token.important,
-      .token.function,
-      .token.bold {
-          font-weight: bold;
-      }
+    .token.italic {
+        font-style: italic;
+    }
 
-      .token.italic {
-          font-style: italic;
-      }
+    .grid {
+      display: flex;
+      justify-content: space-around;
+    }
 
-      .grid {
-        display: flex;
-        justify-content: space-around;
-      }
+    .half-width {
+      width: 50%;
+    }
 
-      .half-width {
-        width: 50%;
-      }
+    .full-width {
+      width: 100%;
+    }
+  </style>
 
-      .full-width {
-        width: 100%;
-      }
-    </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.6.0/prism.js"></script>
+</head>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.6.0/prism.js"></script>
-  </head>
+<body class="container">
+  <header class="banner">
+    <h1 class="banner-title">Thingamajig</h1>
+    <em class="banner-tagline">Live Editing for JavaScript Developers</em>
+  </header>
 
-  <body class="container">
-    <header class="banner">
-      <h1 class="banner-title">Thingamajig</h1>
-      <em class="banner-tagline">Live Editing for JavaScript Developers</em>
-    </header>
+  <main class="content grid">
+    <section id="editor" class="window half-width">
+      <header class="window-header">
+        <span class="window-title">demo/index.html</span>
+      </header>
 
-    <main class="content grid">
-      <section id="editor" class="window half-width">
-        <header class="window-header">
-          <span class="window-title">demo/index.html</span>
-        </header>
-
-        <section class="window-pane">
-          <ul class="tab-group">
-          </ul>
-        </section>
+      <section class="window-pane">
+        <ul class="tab-group">
+        </ul>
       </section>
+    </section>
 
-      <section id="browser" class="window half-width">
-        <header class="window-header">
-          <span class="window-title">http://localhost:3000/callbacks.html</span>
-        </header>
+    <section id="browser" class="window half-width">
+      <header class="window-header">
+        <span class="window-title">http://localhost:3000/callbacks.html</span>
+      </header>
 
-        <section class="window-pane">
-          <iframe id="frame" class="frame"></iframe>
-        </section>
+      <section class="window-pane">
+        <iframe id="frame" class="frame"></iframe>
       </section>
-    </main>
+    </section>
+  </main>
 
-    <script id="tab" type="text/template">
-      <li id="$id" class="tab">
-        <header class="tab-header">
-          <a class="tab-link" href="#$id">$id</a>
-        </header>
+  <script id="tab" type="text/template">
+    <li id="$id" class="tab">
+      <header class="tab-header">
+        <a class="tab-link" href="#$id">$id</a>
+      </header>
 
-        <span class="tab-pane">
-          <label class="editor" data-filename="$id">
-            <pre class="editor-output" data-language="$language"></pre>
-            <textarea class="editor-input" data-language="$language"></textarea>
-          </label>
-        </span>
+      <span class="tab-pane">
+        <label class="editor" data-filename="$id">
+          <pre class="editor-output" data-language="$language"></pre>
+          <textarea class="editor-input" data-language="$language"></textarea>
+        </label>
+      </span>
 
-        <script>
-          setTimeout(function(item) {
-            var group = item.closest('.tab-group');
-            var link = item.querySelector('.tab-link');
+      <script>
+        setTimeout(function(item) {
+          var group = item.closest('.tab-group');
+          var link = item.querySelector('.tab-link');
 
-            link.onclick = function() {
-              var active = group.querySelector('.active');
-              if (active) {
-                active.classList.remove('active');
-              }
+          link.onclick = function() {
+            var active = group.querySelector('.active');
+            if (active) {
+              active.classList.remove('active');
+            }
 
-              var href = link.getAttribute('href');
-              var tab = group.querySelector('[id="' + href.slice(1) + '"]');
+            var href = link.getAttribute('href');
+            var tab = group.querySelector('[id="' + href.slice(1) + '"]');
 
-              tab.classList.add('active');
+            tab.classList.add('active');
 
-              event.preventDefault();
-            };
+            event.preventDefault();
+          };
 
-            var editor = item.querySelector('.editor');
-            var input = item.querySelector('.editor-input');
-            var output = item.querySelector('.editor-output');
+          var editor = item.querySelector('.editor');
+          var input = item.querySelector('.editor-input');
+          var output = item.querySelector('.editor-output');
 
-          	input.spellcheck = false;
-          	input.wrap = "off";
+        	input.spellcheck = false;
+        	input.wrap = "off";
 
-            input.oninput = function() {
-              var value = input.value;
+          input.oninput = function() {
+            var value = input.value;
 
-              var lines = value.split('\n');
-              var width = 0;
+            var lines = value.split('\n');
+            var width = 0;
 
-              for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                width = (width > line.length) ? width : line.length;
-              }
+            for (var i = 0; i < lines.length; i++) {
+              var line = lines[i];
+              width = (width > line.length) ? width : line.length;
+            }
 
-              input.rows = lines.length + 1;
-              input.cols = width + 1;
+            input.rows = lines.length + 1;
+            input.cols = width + 1;
 
-              var grammar = Prism.languages[
-                input.getAttribute('data-language')
-              ];
+            var grammar = Prism.languages[
+              input.getAttribute('data-language')
+            ];
 
-              output.innerHTML = Prism.highlight(value, grammar);
+            output.innerHTML = Prism.highlight(value, grammar);
 
-              var content = frame.contentDocument;
-              if (/\.js/.test(item.id)) {
-                var script = content.querySelector(
-                  'script[src*="' + item.id + '"]'
-                );
+            var content = frame.contentDocument;
+            if (/\.js/.test(item.id)) {
+              var script = content.querySelector(
+                'script[src*="' + item.id + '"]'
+              );
 
-                script.inject(input.value);
-              } else if (/\.html/.test(item.id)) {
-                content.inject(input.value);
-              }
-            };
+              script.inject(input.value);
+            } else if (/\.html/.test(item.id)) {
+              content.inject(input.value);
+            }
+          };
 
-            input.disabled = true;
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', ['demo', item.id].join('/'));
-            xhr.onload = function() {
-              input.value = xhr.responseText;
-              input.disabled = false;
+          input.disabled = true;
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', ['demo', item.id].join('/'));
+          xhr.onload = function() {
+            input.value = xhr.responseText;
+            input.disabled = false;
 
-              var event = document.createEvent('Event');
-              event.initEvent('input', true, true);
-              input.dispatchEvent(event);
-            };
+            var event = document.createEvent('Event');
+            event.initEvent('input', true, true);
+            input.dispatchEvent(event);
+          };
 
-            xhr.send(null);
-          }, 0, document.getElementById('$id'));
-        </script>
-      </li>
-    </script>
+          xhr.send(null);
+        }, 0, document.getElementById('$id'));
+      </script>
+    </li>
+  </script>
 
-    <script type="text/javascript">
-      frame.onload = function() {
-        var group = editor.querySelector('.tab-group');
-        group.innerHTML = '';
+  <script type="text/javascript">
+    frame.onload = function() {
+      var group = editor.querySelector('.tab-group');
+      group.innerHTML = '';
 
-        var id = 'index.html';
-        group.innerHTML += tab.text
-          .replace(/\$id/g, id)
-          .replace(/\$language/g, 'html');
+      var id = 'index.html';
+      group.innerHTML += tab.text
+        .replace(/\$id/g, id)
+        .replace(/\$language/g, 'html');
 
-        var scripts = frame.contentDocument.getElementsByTagName('script');
-        for (var i = 0; i < scripts.length; i++) {
-          var script = scripts[i];
-          if (script.getAttribute('type') != 'thingamajig/javascript') {
-            continue;
-          }
-
-          var id = script.getAttribute('src');
-          group.innerHTML += tab.text
-            .replace(/\$id/g, id)
-            .replace(/\$language/g, 'javascript');
+      var scripts = frame.contentDocument.getElementsByTagName('script');
+      for (var i = 0; i < scripts.length; i++) {
+        var script = scripts[i];
+        if (script.getAttribute('type') != 'thingamajig/javascript') {
+          continue;
         }
 
-        var current = editor.querySelector('.tab:last-child');
-        current.className += ' active';
+        var id = script.getAttribute('src');
+        group.innerHTML += tab.text
+          .replace(/\$id/g, id)
+          .replace(/\$language/g, 'javascript');
+      }
 
-        setTimeout(function(group) {
-          var scripts = Array.from(
-            group.getElementsByTagName('script')
-          );
+      var current = editor.querySelector('.tab:last-child');
+      current.className += ' active';
 
-          for (var i = 0; i < scripts.length; i++) {
-            var script = scripts[i];
+      setTimeout(function(group) {
+        var scripts = Array.from(
+          group.getElementsByTagName('script')
+        );
 
-            var parent = script.parentElement;
-            var clone = document.createElement('script');
-            clone.text = script.text;
+        for (var i = 0; i < scripts.length; i++) {
+          var script = scripts[i];
 
-            parent.replaceChild(clone, script);
-          }
-        }, 0, group);
-      };
+          var parent = script.parentElement;
+          var clone = document.createElement('script');
+          clone.text = script.text;
 
-      frame.src = '//' + location.host + '/demo/index.html';
-    </script>
-  </body>
-  </html>
+          parent.replaceChild(clone, script);
+        }
+      }, 0, group);
+    };
+
+    frame.src = '//' + location.host + '/demo/index.html';
+  </script>
+</body>
+</html>
