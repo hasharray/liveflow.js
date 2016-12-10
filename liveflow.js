@@ -213,6 +213,10 @@ if (documentElement.hasAttribute('live')) {
     }, 0);
 
     setTimeout(function next() {
+      if (interval < 0) {
+        return;
+      }
+
       var elements = [];
       elements.push.apply(elements, document.getElementsByTagName('img'));
       elements.push.apply(elements, document.getElementsByTagName('link'));
