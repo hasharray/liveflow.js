@@ -320,18 +320,19 @@
           	input.spellcheck = false;
           	input.wrap = "off";
 
-            input.onscroll = function(event) {
-              var value = input.value;
-              var lines = value.split('\n');
-
-              input.rows = lines.length + 1;
-            };
-
             input.oninput = function() {
               var value = input.value;
 
               var lines = value.split('\n');
+              var width = 0;
+
+              for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                width = (width > line.length) ? width : line.length;
+              }
+
               input.rows = lines.length + 1;
+              input.cols = width + 1;
 
               var grammar = Prism.languages[
                 input.getAttribute('data-language')
