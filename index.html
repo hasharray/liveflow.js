@@ -324,6 +324,7 @@
         	input.spellcheck = false;
         	input.wrap = "off";
 
+          var timeout = null;
           input.oninput = function() {
             var value = input.value;
 
@@ -344,16 +345,22 @@
 
             output.innerHTML = Prism.highlight(value, grammar);
 
-            var content = frame.contentDocument;
-            if (/\.js/.test(item.id)) {
-              var script = content.querySelector(
-                'script[src*="' + item.id + '"]'
-              );
-
-              script.inject(input.value);
-            } else if (/\.html/.test(item.id)) {
-              content.inject(input.value);
+            if (timeout) {
+              clearTimeout(timeout);
             }
+
+            timeout = setTimeout(function() {
+              var content = frame.contentDocument;
+              if (/\.js/.test(item.id)) {
+                var script = content.querySelector(
+                  'script[src*="' + item.id + '"]'
+                );
+
+                script.inject(input.value);
+              } else if (/\.html/.test(item.id)) {
+                content.inject(input.value);
+              }
+            }, 500);
           };
 
           input.disabled = true;
