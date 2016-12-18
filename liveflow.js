@@ -94,7 +94,7 @@ if (documentElement.hasAttribute('live')) {
       onNodeAdded: function(node) {
         if (/SCRIPT/.test(node.tagName)) {
           var script = document.createElement('script');
-          attributes = node.attributes;
+          var attributes = node.attributes;
 
           for (var i = 0; i < attributes.length; i++) {
             var attribute = attributes[i];
@@ -105,7 +105,7 @@ if (documentElement.hasAttribute('live')) {
           node.parentNode.insertBefore(script, node);
           node.parentNode.removeChild(node);
         }
-      }
+      },
     });
   };
 
