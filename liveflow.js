@@ -1,4 +1,23 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var types = [
+  'application/javascript',
+  'application/ecmascript',
+  'application/x-ecmascript',
+  'application/x-javascript',
+  'text/ecmascript',
+  'text/javascript',
+  'text/javascript1.0',
+  'text/javascript1.1',
+  'text/javascript1.2',
+  'text/javascript1.3',
+  'text/javascript1.4',
+  'text/javascript1.5',
+  'text/jscript',
+  'text/livescript',
+  'text/x-ecmascript',
+  'text/x-javascript'
+];
+
 var currentScript = (function() {
   if (document.currentScript) {
     return document.currentScript;
@@ -30,18 +49,63 @@ if (documentElement.hasAttribute('live')) {
   var morphdom = require('morphdom');
 
   HTMLDocument.prototype.inject = function(content) {
-    morphdom(this.documentElement, content, {
-      onBeforeElUpdated: function(source, target) {
-        if (source.tagName == 'SCRIPT') {
-          if (source.hasAttribute('title')) {
-            target.setAttribute('title', source.getAttribute('title'));
+    var contentElement = document.createElement('html');
+    contentElement.innerHTML = content;
+    contentElement.setAttribute('live', '');
+
+    var scripts = contentElement.getElementsByTagName('script');
+    for (var i = 0; i < scripts.length; i++) {
+      var script = scripts[i];
+      if (exclude.test(script.src) || !include.test(script.src)) {
+        continue;
+      }
+
+      if (currentScript.src == script.src) {
+        continue;
+      }
+
+      if (script.hasAttribute('type')) {
+        var type = script.getAttribute('type');
+        if (types.indexOf(type) < 0) {
+          continue;
+        }
+
+        script.setAttribute('data-type', type);
+        script.removeAttribute('type');
+      }
+
+      script.setAttribute('type', 'thingamajig/javascript');
+    }
+
+    morphdom(this.documentElement, contentElement, {
+      getNodeKey: function(node) {
+        if (/SCRIPT/.test(node.tagName)) {
+          if (node.getAttribute('id')) {
+            return node.tagName + '#' + node.getAttribute('id');
           }
 
-          if (source.hasAttribute('type')) {
-            target.setAttribute('type', source.getAttribute('type'));
+          if (node.hasAttribute('src')) {
+            return node.tagName + '[src=' + node.getAttribute('src') + ']';
           }
         }
+
+        return node.id;
       },
+      onNodeAdded: function(node) {
+        if (/SCRIPT/.test(node.tagName)) {
+          var script = document.createElement('script');
+          attributes = node.attributes;
+
+          for (var i = 0; i < attributes.length; i++) {
+            var attribute = attributes[i];
+            script.setAttribute(attribute.name, attribute.value);
+          }
+
+          script.appendChild( document.createTextNode(node.textContent));
+          node.parentNode.insertBefore(script, node);
+          node.parentNode.removeChild(node);
+        }
+      }
     });
   };
 
@@ -300,25 +364,6 @@ if (documentElement.hasAttribute('live')) {
     var scripts = [];
     scripts.push.apply(scripts, head.getElementsByTagName('script'));
     scripts.push.apply(scripts, body.getElementsByTagName('script'));
-
-    var types = [
-      'application/javascript',
-      'application/ecmascript',
-      'application/x-ecmascript',
-      'application/x-javascript',
-      'text/ecmascript',
-      'text/javascript',
-      'text/javascript1.0',
-      'text/javascript1.1',
-      'text/javascript1.2',
-      'text/javascript1.3',
-      'text/javascript1.4',
-      'text/javascript1.5',
-      'text/jscript',
-      'text/livescript',
-      'text/x-ecmascript',
-      'text/x-javascript'
-    ];
 
     for (var i = 0; i < scripts.length; i++) {
       var script = scripts[i];
