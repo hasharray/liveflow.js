@@ -91,7 +91,7 @@ if (documentElement.hasAttribute('live')) {
 
         return node.id;
       },
-      onNodeAdded: function(node) {
+      onBeforeNodeAdded: function(node) {
         if (/SCRIPT/.test(node.tagName)) {
           var script = document.createElement('script');
           var attributes = node.attributes;
@@ -101,10 +101,12 @@ if (documentElement.hasAttribute('live')) {
             script.setAttribute(attribute.name, attribute.value);
           }
 
-          script.appendChild( document.createTextNode(node.textContent));
-          node.parentNode.insertBefore(script, node);
-          node.parentNode.removeChild(node);
+          script.appendChild(document.createTextNode(node.textContent));
+
+          return script;
         }
+
+        return node;
       },
     });
   };
