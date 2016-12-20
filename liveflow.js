@@ -112,6 +112,23 @@ if (documentElement.hasAttribute('live')) {
 
         return node;
       },
+      onNodeAdded: function(node) {
+        if (node.tagName == 'SCRIPT') {
+          if (node.type == 'thingamajig/javascript') {
+            if (script.src) {
+              var xhr = new XMLHttpRequest();
+              xhr.open('GET', script.src, script.async);
+              xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4) {
+                  node.inject(xhr.responseText);
+                }
+              };
+
+              xhr.send(null);
+            }
+          }
+        }
+      },
     });
   };
 
