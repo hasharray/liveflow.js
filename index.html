@@ -74,6 +74,7 @@ layout: default
         input.wrap = "off";
 
         var timeout = null;
+        var ready = false;
         input.oninput = function() {
           var value = input.value;
 
@@ -94,28 +95,34 @@ layout: default
 
           output.innerHTML = Prism.highlight(value, grammar);
 
-          if (timeout) {
-            clearTimeout(timeout);
-          }
-
-          timeout = setTimeout(function() {
-            var content = frame.contentDocument;
-            if (/\.js/.test(item.id)) {
-              var target = content.getElementById(item.id);
-
-              var clone = target.cloneNode(true);
-              clone.text = input.value;
-
-              content.inject(target, clone);
-            } else if (/\.html/.test(item.id)) {
-              var target = content.documentElement;
-
-              var clone = target.cloneNode(true);
-              clone.innerHTML = input.value;
-
-              content.inject(target, clone);
+          if (ready) {
+            if (timeout) {
+              clearTimeout(timeout);
             }
-          }, 500);
+
+            timeout = setTimeout(function() {
+              var content = frame.contentDocument;
+              if (/\.js/.test(item.id)) {
+                var target = content.getElementById(item.id);
+                if (target.text != input.value) {
+                  var clone = target.cloneNode(true);
+                  clone.text = input.value;
+
+                  content.inject(target, clone);
+                }
+              } else if (/\.html/.test(item.id)) {
+                var target = content.documentElement;
+                if (target.outerHTML.replace(/\n/g, '') != input.value.replace(/\n/, '')) {
+                  var clone = target.cloneNode(true);
+                  clone.innerHTML = input.value;
+
+                  content.inject(target, clone);
+                }
+              }
+            }, 500);
+          } else {
+            ready = true;
+          }
         };
 
         input.disabled = true;
