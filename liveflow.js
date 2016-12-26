@@ -13,7 +13,7 @@ if (currentScript.hasAttribute('data-interval')) {
   interval = Number(currentScript.getAttribute('data-interval'));
 }
 
-var exclude = /cdn/;
+var exclude = /cdn|liveflow/;
 if (currentScript.hasAttribute('data-exclude')) {
   exclude = RegExp(currentScript.getAttribute('data-exclude'));
 }
