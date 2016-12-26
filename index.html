@@ -101,13 +101,19 @@ layout: default
           timeout = setTimeout(function() {
             var content = frame.contentDocument;
             if (/\.js/.test(item.id)) {
-              var script = content.querySelector(
-                'script[src*="' + item.id + '"]'
-              );
+              var target = content.getElementById(item.id);
 
-              script.inject(input.value);
+              var clone = target.cloneNode(true);
+              clone.text = input.value;
+
+              content.inject(target, clone);
             } else if (/\.html/.test(item.id)) {
-              content.inject(input.value);
+              var target = content.documentElement;
+
+              var clone = target.cloneNode(true);
+              clone.innerHTML = input.value;
+
+              content.inject(target, clone);
             }
           }, 500);
         };
@@ -143,11 +149,16 @@ layout: default
     var scripts = frame.contentDocument.getElementsByTagName('script');
     for (var i = 0; i < scripts.length; i++) {
       var script = scripts[i];
-      if (script.getAttribute('type') != 'thingamajig/javascript') {
+      var type = script.getAttribute('type');
+      if (type != 'script') {
         continue;
       }
 
       var id = script.getAttribute('src');
+      if (/cdn|liveflow/.test(id)) {
+        continue;
+      }
+
       group.innerHTML += tab.text
         .replace(/\$id/g, id)
         .replace(/\$language/g, 'javascript');
