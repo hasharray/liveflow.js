@@ -131,9 +131,10 @@ if (document.inject == null) {
             }
 
             script.setAttribute('data-type', type);
-            script.setAttribute('type', 'script');
           }
         }
+
+        script.setAttribute('type', 'script');
 
         if (!script.hasAttribute('id')) {
           if (script.hasAttribute('src')) {
