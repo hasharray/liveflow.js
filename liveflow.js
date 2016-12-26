@@ -180,8 +180,8 @@ if (document.inject == null) {
         },
         onElUpdated: function(target) {
           if (target.nodeName == 'SCRIPT') {
-            if (source.text) {
-              revaluate(target.text, source.id, function(output) {
+            if (target.text) {
+              revaluate(target.text, target.id, function(output) {
                 eval(output.toString());
               });
             } else if (target.src) {
