@@ -98,8 +98,10 @@ if (document.inject == null) {
         '  }',
         '',
         '  if (!script.hasAttribute(\'id\')) {',
-        '    var id = script.getAttribute(\'src\');',
-        '    script.setAttribute(\'id\', id);',
+        '    if (script.hasAttribute(\'src\')) {',
+        '      var id = script.getAttribute(\'src\');',
+        '      script.setAttribute(\'id\', id);',
+        '    }',
         '  }',
         '',
         '  script.text = \'\';',
@@ -135,12 +137,14 @@ if (document.inject == null) {
 
           script.setAttribute('data-type', type);
           script.setAttribute('type', 'script');
+        }
 
-          if (!script.hasAttribute('id') && script.hasAttribute('src')) {
-            var src = script.getAttribute('src')
-              .replace(/[?&]=reload/, '');
+        if (!script.hasAttribute('id')) {
+          if (script.hasAttribute('src')) {
+            var id = script.getAttribute('src')
+              .replace(/[?&]reload=.*/, '');
 
-            script.setAttribute('id', src);
+            script.setAttribute('id', id);
           }
         }
       }
@@ -187,15 +191,17 @@ if (document.inject == null) {
             } else if (target.src) {
               var xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function() {
-                if (exclude.test(target.src) || !include.test(target.src)) {
-                  eval([
-                    xhr.responseText,
-                    '//# sourceURL=' + xhr.responseURL,
-                  ].join('\n'));
-                } else {
-                  revaluate(xhr.responseText, target.id, function(output) {
-                    eval(output.toString());
-                  });
+                if (xhr.readyState == 4) {
+                  if (exclude.test(target.src) || !include.test(target.src)) {
+                    eval([
+                      xhr.responseText,
+                      '//# sourceURL=' + xhr.responseURL,
+                    ].join('\n'));
+                  } else {
+                    revaluate(xhr.responseText, target.id, function(output) {
+                      eval(output.toString());
+                    });
+                  }
                 }
               };
 
@@ -252,7 +258,7 @@ if (document.inject == null) {
         xhr.onreadystatechange = function() {
           if (xhr.readyState == 4) {
             var clone = document.cloneNode(true);
-            clone.documentElement.outerHTML = xhr.responseText;
+            clone.documentElement.innerHTML = xhr.responseText;
 
             document.inject(document.documentElement, clone.documentElement);
           }
