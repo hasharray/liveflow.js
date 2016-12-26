@@ -125,12 +125,14 @@ if (document.inject == null) {
         var script = scripts[i];
         if (script.hasAttribute('type')) {
           var type = script.getAttribute('type');
-          if (executable.indexOf(type) < 0) {
-            continue;
-          }
+          if (type != 'script') {
+            if (executable.indexOf(type) < 0) {
+              continue;
+            }
 
-          script.setAttribute('data-type', type);
-          script.setAttribute('type', 'script');
+            script.setAttribute('data-type', type);
+            script.setAttribute('type', 'script');
+          }
         }
 
         if (!script.hasAttribute('id')) {
