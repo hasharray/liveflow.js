@@ -96,27 +96,15 @@ if (document.inject == null) {
         '    script.setAttribute(\'src\', script.getAttribute(\'data-src\'));',
         '    script.removeAttribute(\'data-src\');',
         '  }',
-        '',
         '  if (!script.hasAttribute(\'id\')) {',
         '    if (script.hasAttribute(\'src\')) {',
         '      var id = script.getAttribute(\'src\');',
         '      script.setAttribute(\'id\', id);',
         '    }',
         '  }',
+        '  script.text = unescape(\'' + escape(script.text) + '\');',
         '',
-        '  script.text = \'\';',
-        '',
-        '  var clone = script.cloneNode(true);',
-        '',
-        '  if (script.hasAttribute(\'src\')) {',
-        '    var src = script.getAttribute(\'src\');',
-        '    clone.setAttribute(\'src\', src);',
-        '    script.removeAttribute(\'src\');',
-        '  }',
-        '',
-        '  clone.text = unescape(\'' + escape(script.text) + '\');',
-        '',
-        '  document.inject(script, clone);',
+        '  document.inject(script, script);',
         '}(document.getElementById(\'' + script.getAttribute('id') + '\')));',
       ].join('\n');
     }
@@ -126,7 +114,13 @@ if (document.inject == null) {
       var morph = require('morphdom');
       var revaluate = require('revaluate');
 
-      var scripts = source.getElementsByTagName('script');
+      var scripts = [];
+      if (source.nodeName == 'SCRIPT') {
+        scripts.push(source);
+      } else {
+        scripts.push.apply(scripts, source.getElementsByTagName('script'));
+      }
+
       for (var i = 0; i < scripts.length; i++) {
         var script = scripts[i];
         if (script.hasAttribute('type')) {
@@ -149,72 +143,54 @@ if (document.inject == null) {
         }
       }
 
-      return morph(target, source, {
-        onNodeAdded: function(target) {
-          if (target.nodeName == 'SCRIPT') {
-            if (target.src) {
-              var xhr = new XMLHttpRequest();
-              xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4) {
-                  if (exclude.test(target.src) || !include.test(target.src)) {
-                    eval([
-                      xhr.responseText,
-                      '//# sourceURL=' + xhr.responseURL,
-                    ].join('\n'));
-                  } else {
-                    revaluate(xhr.responseText, target.id, function(output) {
-                      eval(output.toString());
-                    });
-                  }
-                }
-              };
+      var result = morph(target, source);
 
-              xhr.open('GET', target.src, false);
-              xhr.send(null);
-            } else {
-              revaluate(target.text, target.id, function(output) {
-                eval(output.toString());
-              });
+      var scripts = [];
+      if (result.nodeName == 'SCRIPT') {
+        scripts.push(result);
+      } else {
+        scripts.push.apply(scripts, result.getElementsByTagName('script'));
+      }
+
+      for (var i = 0; i < scripts.length; i++) {
+        var script = scripts[i];
+        if (script.getAttribute('type') != 'script') {
+          continue;
+        }
+
+        if (script.src && script.src != script.cache) {
+          script.cache = script.src;
+
+          var xhr = new XMLHttpRequest();
+          xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4) {
+              script.content = xhr.responseText;
+
+              if (exclude.test(script.src) || !include.test(script.src)) {
+                eval([
+                  script.content,
+                  '//# sourceURL=' + script.src,
+                ].join('\n'));
+              } else {
+                revaluate(script.content, script.id, function(output) {
+                  eval(output.toString());
+                });
+              }
             }
-          }
+          };
 
-          var inject = document.createEvent('Event');
-          inject.initEvent('inject', true, true);
-          target.dispatchEvent(inject);
-        },
-        onElUpdated: function(target) {
-          if (target.nodeName == 'SCRIPT') {
-            if (target.text) {
-              revaluate(target.text, target.id, function(output) {
-                eval(output.toString());
-              });
-            } else if (target.src) {
-              var xhr = new XMLHttpRequest();
-              xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4) {
-                  if (exclude.test(target.src) || !include.test(target.src)) {
-                    eval([
-                      xhr.responseText,
-                      '//# sourceURL=' + xhr.responseURL,
-                    ].join('\n'));
-                  } else {
-                    revaluate(xhr.responseText, target.id, function(output) {
-                      eval(output.toString());
-                    });
-                  }
-                }
-              };
+          xhr.open('GET', script.src, false);
+          xhr.send(null);
+        } else if (script.text != script.content) {
+          script.content = script.text;
 
-              xhr.open('GET', target.src, false);
-              xhr.send(null);
-            }
-          }
+          revaluate(script.content, script.id, function(output) {
+            eval(output.toString());
+          });
+        }
+      }
 
-          var inject = document.createEvent('Event');
-          inject.initEvent('inject', true, true);
-          target.dispatchEvent(inject);
-        },
-      });
+      return result;
     };
 
     document.reload = function(pattern) {
