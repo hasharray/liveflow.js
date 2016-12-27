@@ -179,6 +179,10 @@ if (document.inject == null) {
                   eval(output.toString());
                 });
               }
+
+              var load = document.createEvent('Event');
+              load.initEvent('load', false, false);
+              script.dispatchEvent(load);
             }
           };
 
@@ -192,6 +196,10 @@ if (document.inject == null) {
           });
         }
       }
+
+      var inject = document.createEvent('Event');
+      inject.initEvent('inject', true, false);
+      result.dispatchEvent(inject);
 
       return result;
     };
