@@ -1,3 +1,5 @@
 var token = Math.random();
 
-document.querySelector('span').innerHTML = token;
+document.addEventListener('inject', function() {
+  document.querySelector('span').innerHTML = token;
+}, false);
