@@ -84,7 +84,7 @@ if (document.inject == null) {
       script.setAttribute('id', 'script-' + i);
       script.text = [
         '(function(script) {',
-        '  script.setAttribute(\'type\', \'script\');',
+        '  script.setAttribute(\'type\', \'inject\');',
         '  if (script.hasAttribute(\'data-id\')) {',
         '    script.setAttribute(\'id\', script.getAttribute(\'data-id\'));',
         '    script.removeAttribute(\'data-id\');',
@@ -125,7 +125,7 @@ if (document.inject == null) {
         var script = scripts[i];
         if (script.hasAttribute('type')) {
           var type = script.getAttribute('type');
-          if (type != 'script') {
+          if (type != 'inject') {
             if (executable.indexOf(type) < 0) {
               continue;
             }
@@ -134,7 +134,7 @@ if (document.inject == null) {
           }
         }
 
-        script.setAttribute('type', 'script');
+        script.setAttribute('type', 'inject');
 
         if (!script.hasAttribute('id')) {
           if (script.hasAttribute('src')) {
@@ -157,7 +157,7 @@ if (document.inject == null) {
 
       for (var i = 0; i < scripts.length; i++) {
         var script = scripts[i];
-        if (script.getAttribute('type') != 'script') {
+        if (script.getAttribute('type') != 'inject') {
           continue;
         }
 
