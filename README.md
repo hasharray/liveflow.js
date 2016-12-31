@@ -50,28 +50,19 @@ just include the script in your runtime environment and be done with it.
 
 ### Node.js
 
-1. Install the `thingamajig` module.
+1. Install the `liveflow` module.
 ```
-npm install thingamajig
+npm install liveflow
 ```
 
 2. Start node with the `--require` (shorthand `-r`) option, passing in
-`thingamajig` as the module name to require.
+`liveflow` as the module name to require.
 
 ```
-node -r thingamajig myapp.js
+node -r liveflow myapp.js
 ```
 
-3. 3. Enjoy live editing and reloading.
-
-If you want to do your own post-processing in addition to what thingamajig does,
-add a listener on the `reload` event.
-
-```js
-proces.on('reload', function(module) {
-  console.log(module.filename, 'reloaded');
-});
-```
+3. Enjoy live editing and reloading.
 
 ### Browser
 
@@ -79,25 +70,16 @@ proces.on('reload', function(module) {
 document, it should be the first element after the opening `<head>` tag.
 
 ```html
-<script src="//thingamajig.js.org/thingamajig.js"></script>
+<script src="//liveflow.js.org/liveflow.js"></script>
 ```
 
 2. Open the document in your preferred browser.
 
 3. Enjoy live editing and reloading.
 
-If you want to do your own post-processing in addition to what thingamajig does,
-add an event listener to the `reload` event.
-
-```js
-document.addEventListener('reload', function(event) {
-  console.log(event.target);
-});
-```
-
 ## Documentation
 
-See [https://thingamajig.js.org].
+See [https://liveflow.js.org](https://liveflow.js.org).
 
 ## License
 
